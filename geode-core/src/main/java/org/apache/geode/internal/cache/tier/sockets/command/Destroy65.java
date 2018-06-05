@@ -269,6 +269,9 @@ public class Destroy65 extends BaseCommand {
               // operation - bug #51664
             }
           } else {
+            if (expectedOldValue != null) {
+              expectedOldValue.toString();
+            }
             region.basicBridgeRemove(key, expectedOldValue, callbackArg,
                 serverConnection.getProxyID(), true, clientEvent);
             if (logger.isDebugEnabled()) {

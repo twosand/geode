@@ -33,27 +33,31 @@ import org.apache.geode.pdx.PdxSerializationException;
  */
 public class PdxOutputStream implements ByteBufferWriter {
 
-  private final HeapDataOutputStream hdos;
+  private final HeapDataOutputStream heapDataOutputStream;
 
   public PdxOutputStream() {
-    this.hdos = new HeapDataOutputStream(Version.CURRENT);
+    this.heapDataOutputStream = new HeapDataOutputStream(Version.CURRENT);
   }
 
   public PdxOutputStream(int allocSize) {
-    this.hdos = new HeapDataOutputStream(allocSize, Version.CURRENT);
+    this.heapDataOutputStream = new HeapDataOutputStream(allocSize, Version.CURRENT);
   }
 
   /**
    * Wrapper constructor
    *
    */
-  public PdxOutputStream(HeapDataOutputStream hdos) {
-    this.hdos = hdos;
+  public PdxOutputStream(HeapDataOutputStream heapDataOutputStream) {
+    this.heapDataOutputStream = heapDataOutputStream;
+  }
+
+  public String toString() {
+    return "PdxOutputStream(" + heapDataOutputStream + ")";
   }
 
   public void writeDate(Date date) {
     try {
-      DataSerializer.writeDate(date, this.hdos);
+      DataSerializer.writeDate(date, this.heapDataOutputStream);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
@@ -61,7 +65,7 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public void writeString(String value) {
     try {
-      DataSerializer.writeString(value, this.hdos);
+      DataSerializer.writeString(value, this.heapDataOutputStream);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
@@ -69,7 +73,8 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public void writeObject(Object object, boolean ensureCompatibility) {
     try {
-      InternalDataSerializer.basicWriteObject(object, this.hdos, ensureCompatibility);
+      InternalDataSerializer.basicWriteObject(object, this.heapDataOutputStream,
+          ensureCompatibility);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
@@ -77,7 +82,7 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public void writeBooleanArray(boolean[] array) {
     try {
-      DataSerializer.writeBooleanArray(array, this.hdos);
+      DataSerializer.writeBooleanArray(array, this.heapDataOutputStream);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
@@ -85,7 +90,7 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public void writeCharArray(char[] array) {
     try {
-      DataSerializer.writeCharArray(array, this.hdos);
+      DataSerializer.writeCharArray(array, this.heapDataOutputStream);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
@@ -93,7 +98,7 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public void writeByteArray(byte[] array) {
     try {
-      DataSerializer.writeByteArray(array, this.hdos);
+      DataSerializer.writeByteArray(array, this.heapDataOutputStream);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
@@ -101,7 +106,7 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public void writeShortArray(short[] array) {
     try {
-      DataSerializer.writeShortArray(array, this.hdos);
+      DataSerializer.writeShortArray(array, this.heapDataOutputStream);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
@@ -109,7 +114,7 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public void writeIntArray(int[] array) {
     try {
-      DataSerializer.writeIntArray(array, this.hdos);
+      DataSerializer.writeIntArray(array, this.heapDataOutputStream);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
@@ -117,7 +122,7 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public void writeLongArray(long[] array) {
     try {
-      DataSerializer.writeLongArray(array, this.hdos);
+      DataSerializer.writeLongArray(array, this.heapDataOutputStream);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
@@ -125,7 +130,7 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public void writeFloatArray(float[] array) {
     try {
-      DataSerializer.writeFloatArray(array, this.hdos);
+      DataSerializer.writeFloatArray(array, this.heapDataOutputStream);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
@@ -133,7 +138,7 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public void writeDoubleArray(double[] array) {
     try {
-      DataSerializer.writeDoubleArray(array, this.hdos);
+      DataSerializer.writeDoubleArray(array, this.heapDataOutputStream);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
@@ -141,7 +146,7 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public void writeStringArray(String[] array) {
     try {
-      DataSerializer.writeStringArray(array, this.hdos);
+      DataSerializer.writeStringArray(array, this.heapDataOutputStream);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
@@ -149,7 +154,8 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public void writeObjectArray(Object[] array, boolean ensureCompatibility) {
     try {
-      InternalDataSerializer.writeObjectArray(array, this.hdos, ensureCompatibility);
+      InternalDataSerializer.writeObjectArray(array, this.heapDataOutputStream,
+          ensureCompatibility);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
@@ -157,74 +163,74 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public void writeArrayOfByteArrays(byte[][] array) {
     try {
-      DataSerializer.writeArrayOfByteArrays(array, this.hdos);
+      DataSerializer.writeArrayOfByteArrays(array, this.heapDataOutputStream);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception while serializing a PDX field", e);
     }
   }
 
   public int size() {
-    return this.hdos.size();
+    return this.heapDataOutputStream.size();
   }
 
   public void writeChar(char value) {
-    this.hdos.writeChar(value);
+    this.heapDataOutputStream.writeChar(value);
   }
 
   public void writeByte(int value) {
-    this.hdos.writeByte(value);
+    this.heapDataOutputStream.writeByte(value);
   }
 
   public void writeShort(short value) {
-    this.hdos.writeShort(value);
+    this.heapDataOutputStream.writeShort(value);
   }
 
   public void writeInt(int value) {
-    this.hdos.writeInt(value);
+    this.heapDataOutputStream.writeInt(value);
   }
 
   public void writeLong(long value) {
-    this.hdos.writeLong(value);
+    this.heapDataOutputStream.writeLong(value);
   }
 
   public void writeFloat(float value) {
-    this.hdos.writeFloat(value);
+    this.heapDataOutputStream.writeFloat(value);
   }
 
   public void writeDouble(double value) {
-    this.hdos.writeDouble(value);
+    this.heapDataOutputStream.writeDouble(value);
   }
 
   public HeapDataOutputStream.LongUpdater reserveLong() {
-    return this.hdos.reserveLong();
+    return this.heapDataOutputStream.reserveLong();
   }
 
   public void write(byte b) {
-    this.hdos.write(b);
+    this.heapDataOutputStream.write(b);
   }
 
   public void sendTo(DataOutput out) throws IOException {
-    this.hdos.sendTo(out);
+    this.heapDataOutputStream.sendTo(out);
   }
 
   @Override
   public void write(ByteBuffer data) {
-    this.hdos.write(data);
+    this.heapDataOutputStream.write(data);
   }
 
   public void write(ByteSource data) {
-    this.hdos.write(data);
+    this.heapDataOutputStream.write(data);
   }
 
   public ByteBuffer toByteBuffer() {
-    return this.hdos.toByteBuffer();
+    return this.heapDataOutputStream.toByteBuffer();
   }
 
   public byte[] toByteArray() {
-    return this.hdos.toByteArray();
+    return this.heapDataOutputStream.toByteArray();
   }
 
   public void write(byte[] source, int offset, int len) {
-    this.hdos.write(source, offset, len);
+    this.heapDataOutputStream.write(source, offset, len);
   }
 }

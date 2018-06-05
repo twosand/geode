@@ -26,6 +26,7 @@ import org.apache.geode.cache.client.internal.PutAllOp;
 import org.apache.geode.cache.operations.PutAllOperationContext;
 import org.apache.geode.cache.operations.internal.UpdateOnlyMap;
 import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -205,6 +206,10 @@ public class PutAll80 extends BaseCommand {
           } else {
             value = CachedDeserializableFactory.create(valuePart.getSerializedForm(),
                 region.getCache());
+            Object v = ((CachedDeserializable) value).getValue();
+            if (v != null) {
+              v.toString();
+            }
           }
         } else {
           value = valuePart.getSerializedForm();

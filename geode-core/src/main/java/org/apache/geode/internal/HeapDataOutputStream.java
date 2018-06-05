@@ -94,6 +94,11 @@ public class HeapDataOutputStream extends OutputStream
     writeUTFNoLength(s);
   }
 
+  public String toString() {
+    return "hdos(" + (chunks == null ? "no chunks" : "" + chunks.size() + " chunks") + " position="
+        + buffer.position() + " remaining=" + buffer.remaining() + ")";
+  }
+
   public HeapDataOutputStream(int allocSize, Version version) {
     this(allocSize, version, false);
   }
@@ -390,7 +395,7 @@ public class HeapDataOutputStream extends OutputStream
     // noop
   }
 
-  public void finishWriting() {
+  private void finishWriting() {
     if (this.writeMode) {
       this.ignoreWrites = false;
       this.writeMode = false;

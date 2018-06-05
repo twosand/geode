@@ -63,16 +63,20 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
   }
 
   public PdxReaderImpl(PdxType pdxType, DataInput in, int len) throws IOException {
-    this(pdxType, createDis(in, len));
+    this(pdxType, createDataInput(in, len));
   }
 
-  private static PdxInputStream createDis(DataInput in, int len) throws IOException {
+  PdxInputStream getPdxInputStream() {
+    return new PdxInputStream(dis);
+  }
+
+  private static PdxInputStream createDataInput(DataInput in, int len) throws IOException {
     boolean isBBIS = in instanceof ByteBufferInputStream;
     PdxInputStream bbis;
     if (isBBIS) {
       // Note, it is ok for our immutable bbis to wrap a mutable bbis
       // because PdxReaderImpl is only used for a quick deserialization.
-      // PdxInstanceImpl has its own flavor of createDis since it can
+      // PdxInstanceImpl has its own flavor of createDataInput since it can
       // live longer.
       bbis = new PdxInputStream((ByteBufferInputStream) in, len);
       int bytesSkipped = in.skipBytes(len);
@@ -575,7 +579,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
     }
   }
 
-  private int getPositionForField(PdxField ft) {
+  int getPositionForField(PdxField ft) {
     return getAbsolutePosition(ft);
   }
 

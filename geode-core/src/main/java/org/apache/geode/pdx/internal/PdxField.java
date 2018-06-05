@@ -221,9 +221,8 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
   public String toString() {
     return this.fieldName + ":" + this.type + (isDeleted() ? ":DELETED" : "")
         + (isIdentityField() ? ":identity" : "") + ":" + this.fieldIndex
-        + ((this.varLenFieldSeqId > 0) ? (":" + this.varLenFieldSeqId) : "")
-        + ":idx0(relativeOffset)=" + this.relativeOffset + ":idx1(vlfOffsetIndex)="
-        + this.vlfOffsetIndex;
+        + ((this.varLenFieldSeqId > 0) ? (":" + this.varLenFieldSeqId) : "") + ":relativeOffset="
+        + this.relativeOffset + ":vlfOffsetIndex=" + this.vlfOffsetIndex;
   }
 
   public String getTypeIdString() {

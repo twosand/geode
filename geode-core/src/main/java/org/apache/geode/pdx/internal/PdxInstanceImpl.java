@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.internal.DMStats;
@@ -38,7 +39,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.tcp.ByteBufferInputStream;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import org.apache.geode.internal.util.Hex;
@@ -63,6 +64,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       Boolean.getBoolean("PdxInstance.use-static-mapper");
 
   static final ObjectMapper mapper = USE_STATIC_MAPPER ? createObjectMapper() : null;
+
+  static final Logger logger = LogService.getLogger();
 
   private static ObjectMapper createObjectMapper() {
     ObjectMapper mapper = new ObjectMapper();
@@ -89,17 +92,21 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
   private static final ThreadLocal<Boolean> pdxGetObjectInProgress = new ThreadLocal<Boolean>();
 
   public PdxInstanceImpl(PdxType pdxType, DataInput in, int len) {
-    super(pdxType, createDis(in, len));
+    super(pdxType, createPdxInputStream(in, len));
   }
 
   protected PdxInstanceImpl(PdxReaderImpl original) {
     super(original);
   }
 
-  private static PdxInputStream createDis(DataInput in, int len) {
-    PdxInputStream dis;
+  private static PdxInputStream createPdxInputStream(DataInput in, int len) {
+    PdxInputStream result;
+
+    // if the DataInput is a PdxInputStream it means we're reading an Object embedded
+    // in a PdxInstance
     if (in instanceof PdxInputStream) {
-      dis = new PdxInputStream((ByteBufferInputStream) in, len);
+      result = new PdxInputStream((PdxInputStream) in, len);
+      // advance the stream past the PDX byte array
       try {
         int bytesSkipped = in.skipBytes(len);
         int bytesRemaining = len - bytesSkipped;
@@ -117,9 +124,9 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       } catch (IOException ex) {
         throw new PdxSerializationException("Could not deserialize PDX", ex);
       }
-      dis = new PdxInputStream(bytes);
+      result = new PdxInputStream(bytes);
     }
-    return dis;
+    return result;
   }
 
   public static boolean getPdxReadSerialized() {
@@ -171,17 +178,17 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
 
   @Override
   public byte[] toBytes() {
-    PdxReaderImpl ur = getUnmodifiableReader();
-    if (ur.getPdxType().getHasDeletedField()) {
-      PdxWriterImpl writer = convertToTypeWithNoDeletedFields(ur);
+    PdxReaderImpl reader = getUnmodifiableReader();
+    if (reader.getPdxType().getHasDeletedField()) {
+      PdxWriterImpl writer = convertToTypeWithNoDeletedFields(reader);
       return writer.toByteArray();
     } else {
-      byte[] result = new byte[PdxWriterImpl.HEADER_SIZE + ur.basicSize()];
+      byte[] result = new byte[PdxWriterImpl.HEADER_SIZE + reader.basicSize()];
       ByteBuffer bb = ByteBuffer.wrap(result);
       bb.put(DSCODE.PDX.toByte());
-      bb.putInt(ur.basicSize());
-      bb.putInt(ur.getPdxType().getTypeId());
-      ur.basicSendTo(bb);
+      bb.putInt(reader.basicSize());
+      bb.putInt(reader.getPdxType().getTypeId());
+      reader.basicSendTo(bb);
       return result;
     }
   }
@@ -333,15 +340,15 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       return false;
     }
     final PdxInstanceImpl other = (PdxInstanceImpl) obj;
-    PdxReaderImpl ur2 = other.getUnmodifiableReader();
-    PdxReaderImpl ur1 = getUnmodifiableReader();
+    PdxReaderImpl otherReader = other.getUnmodifiableReader();
+    PdxReaderImpl myReader = getUnmodifiableReader();
 
-    if (!ur1.getPdxType().getClassName().equals(ur2.getPdxType().getClassName())) {
+    if (!myReader.getPdxType().getClassName().equals(otherReader.getPdxType().getClassName())) {
       return false;
     }
 
-    SortedSet<PdxField> myFields = ur1.getPdxType().getSortedIdentityFields();
-    SortedSet<PdxField> otherFields = ur2.getPdxType().getSortedIdentityFields();
+    SortedSet<PdxField> myFields = myReader.getPdxType().getSortedIdentityFields();
+    SortedSet<PdxField> otherFields = otherReader.getPdxType().getSortedIdentityFields();
     if (!myFields.equals(otherFields)) {
       // It is not ok to modify myFields and otherFields in place so make copies
       myFields = new TreeSet<PdxField>(myFields);
@@ -377,8 +384,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
         case DOUBLE_ARRAY:
         case STRING_ARRAY:
         case ARRAY_OF_BYTE_ARRAYS: {
-          ByteSource myBuffer = ur1.getRaw(myType);
-          ByteSource otherBuffer = ur2.getRaw(otherType);
+          ByteSource myBuffer = myReader.getRaw(myType);
+          ByteSource otherBuffer = otherReader.getRaw(otherType);
           if (!myBuffer.equals(otherBuffer)) {
             return false;
           }
@@ -386,8 +393,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
           break;
 
         case OBJECT_ARRAY: {
-          Object[] myArray = ur1.readObjectArray(myType);
-          Object[] otherArray = ur2.readObjectArray(otherType);
+          Object[] myArray = myReader.readObjectArray(myType);
+          Object[] otherArray = otherReader.readObjectArray(otherType);
           if (!Arrays.deepEquals(myArray, otherArray)) {
             return false;
           }
@@ -395,8 +402,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
           break;
 
         case OBJECT: {
-          Object myObject = ur1.readObject(myType);
-          Object otherObject = ur2.readObject(otherType);
+          Object myObject = myReader.readObject(myType);
+          Object otherObject = otherReader.readObject(otherType);
           if (myObject != otherObject) {
             if (myObject == null) {
               return false;
@@ -453,8 +460,9 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
   public String toString() {
     StringBuilder result = new StringBuilder();
     PdxReaderImpl ur = getUnmodifiableReader();
-    result.append("PDX[").append(ur.getPdxType().getTypeId()).append(",")
-        .append(ur.getPdxType().getClassName()).append("]{");
+    result.append("PDX[dsid=").append(ur.getPdxType().getDSId()).append(" typeId=")
+        .append(ur.getPdxType().getTypeNum()).append(",").append(ur.getPdxType().getClassName())
+        .append("]{");
     boolean firstElement = true;
     for (PdxField fieldType : ur.getPdxType().getSortedIdentityFields()) {
       if (firstElement) {
@@ -547,7 +555,24 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
 
   @Override
   public synchronized Object readObject(PdxField ft) {
-    return super.readObject(ft);
+    try {
+      return super.readObject(ft);
+    } catch (RuntimeException e) {
+      if (e.getCause() == null || !(e.getCause() instanceof ClassNotFoundException)) {
+        String message = "Caught Exception";
+        logError(ft, e, message);
+      }
+      throw e;
+    }
+  }
+
+  void logError(PdxField ft, Exception e, String message) {
+    logger.error(message, e);
+    logger.warn("BRUCE: Deserialization error for field {} in type {}", ft, this.getPdxType());
+    logger.warn("toBytes(): {}", Hex.toHex(toBytes()));
+    if (ft != null) {
+      logger.warn("offset to field: {}", getPositionForField(ft));
+    }
   }
 
   @Override

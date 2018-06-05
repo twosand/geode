@@ -17,5 +17,11 @@ package org.apache.geode.pdx.internal;
 import java.io.IOException;
 
 public interface ConvertableToBytes {
+
+  /**
+   * Converts a PDX object into its representative byte array. Note that this is
+   * not necessarily the original byte array representing the PDX object.
+   */
   byte[] toBytes() throws IOException;
+
 }

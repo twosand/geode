@@ -105,7 +105,11 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements Writable
       writer.completeByteStreamGeneration();
       ByteBuffer bb = os.toByteBuffer();
       bb.position(PdxWriterImpl.HEADER_SIZE);
-      basicSetBuffer(bb.slice());
+      ByteBuffer newBuffer = bb.slice();
+      basicSetBuffer(newBuffer);
+      // if (newBuffer.limit() == 1015) {
+      // logError(null, new Exception(), "Buffer is 1015 bytes");
+      // }
       dirtyFields = null;
     }
     return new PdxReaderImpl(this);

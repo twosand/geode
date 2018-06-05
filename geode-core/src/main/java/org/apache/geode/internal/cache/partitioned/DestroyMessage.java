@@ -265,6 +265,9 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
           Integer bucket = Integer
               .valueOf(PartitionedRegionHelper.getHashKey(r, null, this.key, null, this.cbArg));
           event.setCausedByMessage(this);
+          if (expectedOldValue != null) {
+            expectedOldValue.toString();
+          }
           r.getDataView().destroyOnRemote(event, true/* cacheWrite */, this.expectedOldValue);
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "{} updated bucket: {} with key: {}",
@@ -337,6 +340,9 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     this.originalSender = (InternalDistributedMember) DataSerializer.readObject(in);
     this.eventId = (EventID) DataSerializer.readObject(in);
     this.expectedOldValue = DataSerializer.readObject(in);
+    if (expectedOldValue != null) {
+      expectedOldValue.toString();
+    }
 
     final boolean hasFilterInfo = ((flags & HAS_FILTER_INFO) != 0);
     if (hasFilterInfo) {
@@ -357,6 +363,9 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     DataSerializer.writeObject(this.bridgeContext, out);
     DataSerializer.writeObject(this.originalSender, out);
     DataSerializer.writeObject(this.eventId, out);
+    if (expectedOldValue != null) {
+      expectedOldValue.toString();
+    }
     DataSerializer.writeObject(this.expectedOldValue, out);
 
     if (this.filterInfo != null) {
