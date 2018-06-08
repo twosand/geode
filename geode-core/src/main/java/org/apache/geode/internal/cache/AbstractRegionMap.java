@@ -2599,18 +2599,20 @@ public abstract class AbstractRegionMap
         }
       }
       if (deadEntries != numTombstones.get()) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("tombstone count ({}) does not match actual number of tombstones ({})",
-              numTombstones, deadEntries, new Exception());
+        if (logger.isInfoEnabled()) {
+          String message = "GEM-1722: tombstone count (" + numTombstones
+              + ") does not match actual number of entries with tombstones (" + deadEntries + ")";
+          logger.info(message);
         }
         return false;
       } else {
-        if (logger.isDebugEnabled()) {
-          logger.debug("tombstone count verified");
+        if (logger.isInfoEnabled()) {
+          logger.info("GEM-1722: tombstone count matches number of entries with tombstones");
         }
       }
     } catch (Exception e) {
       // ignore
+      logger.info("GEM-1722: verifyTombstoneCount ignored exception", e);
     }
     return true;
   }

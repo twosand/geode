@@ -219,6 +219,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
@@ -2075,6 +2076,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (this.imageState.isClient() && !this.getConcurrencyChecksEnabled()) {
         return result - this.imageState.getDestroyedEntriesCount();
       }
+      if (tombstoneCount.get() > result) {
+        ConcurrentMapWithReusableEntries<Object, Object> map =
+            entries.getCustomEntryConcurrentHashMap();
+        logger.info("GEM-1722: " + tombstoneCount.get() + " tombstones is greater than " + result +
+            " size for " + getFullPath() + " with map keys " + map.keySet() +
+            ", map entries " + map.entrySet() + ", map reusableEntries " +
+            map.entrySetWithReusableEntries());
+      }
       return result - this.tombstoneCount.get();
     }
   }
@@ -3279,7 +3288,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           "unscheduling tombstone for {} count is {} entryMap size is {}", entry.getKey(),
           this.tombstoneCount.get(), this.entries.size()/* , new Exception("stack trace") */);
     }
-    if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT_VERBOSE) && validate) {
+    if (logger.isInfoEnabled(LogMarker.TOMBSTONE_COUNT_VERBOSE) && validate) {
       if (this.entries instanceof AbstractRegionMap) {
         ((AbstractRegionMap) this.entries).verifyTombstoneCount(this.tombstoneCount);
       }
@@ -11545,7 +11554,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (this.entries instanceof AbstractRegionMap) {
         ((AbstractRegionMap) this.entries).verifyTombstoneCount(this.tombstoneCount);
       }
-      logger.debug("Dumping region of size {} tombstones: {}: {}", size(), getTombstoneCount(),
+      logger.info("GEM-1722: Dumping region of size {} tombstones: {}: {}", size(), getTombstoneCount(),
           this.toString());
       if (this.entries instanceof AbstractRegionMap) {
         ((AbstractRegionMap) this.entries).dumpMap();
