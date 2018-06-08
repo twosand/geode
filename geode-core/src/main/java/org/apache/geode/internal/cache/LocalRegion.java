@@ -11554,7 +11554,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (this.entries instanceof AbstractRegionMap) {
         ((AbstractRegionMap) this.entries).verifyTombstoneCount(this.tombstoneCount);
       }
-      logger.info("GEM-1722: Dumping region of size {} tombstones: {}: {}", size(), getTombstoneCount(),
+      logger.info("GEM-1722: Dumping region of size {} tombstones: {}: {}", size(),
+          getTombstoneCount(),
           this.toString());
       if (this.entries instanceof AbstractRegionMap) {
         ((AbstractRegionMap) this.entries).dumpMap();
