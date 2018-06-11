@@ -3290,7 +3290,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     if (logger.isInfoEnabled(LogMarker.TOMBSTONE_COUNT_VERBOSE) && validate) {
       if (this.entries instanceof AbstractRegionMap) {
-        ((AbstractRegionMap) this.entries).verifyTombstoneCount(this.tombstoneCount);
+        ((AbstractRegionMap) this.entries).verifyTombstoneCount(this.tombstoneCount.get());
       }
     }
     // we don't have to remove the entry from the sweeper since the version has
@@ -11552,7 +11552,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public void dumpBackingMap() {
     synchronized (this.entries) {
       if (this.entries instanceof AbstractRegionMap) {
-        ((AbstractRegionMap) this.entries).verifyTombstoneCount(this.tombstoneCount);
+        ((AbstractRegionMap) this.entries).verifyTombstoneCount(this.tombstoneCount.get());
       }
       logger.info("GEM-1722: Dumping region of size {} tombstones: {}: {}", size(),
           getTombstoneCount(),

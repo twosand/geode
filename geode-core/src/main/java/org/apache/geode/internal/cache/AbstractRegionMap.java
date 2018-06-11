@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
@@ -203,7 +202,7 @@ public abstract class AbstractRegionMap
     return map;
   }
 
-  @Override
+  @Override // TODO: Map value should be RegionEntry type
   public Map<Object, Object> getEntryMap() {
     return map;
   }
@@ -2225,10 +2224,15 @@ public abstract class AbstractRegionMap
   }
 
   public void dumpMap() {
-    logger.info("dump of concurrent map of size {} for region {}", getEntryMap().size(),
-        this._getOwner());
-    for (Iterator it = getEntryMap().values().iterator(); it.hasNext();) {
-      logger.info("dumpMap:" + it.next().toString());
+    final int tombstoneCount = _getOwner().getTombstoneCount();
+
+    verifyTombstoneCount(tombstoneCount);
+
+    logger.info("GEM-1722: dump of concurrent map of size {} for region {} with tombstoneCount {}",
+        getEntryMap().size(),
+        _getOwner(), tombstoneCount);
+    for (Object regionEntry : getEntryMap().values()) {
+      logger.info("GEM-1722: dumpMap:" + regionEntry.toString());
     }
   }
 
@@ -2589,7 +2593,7 @@ public abstract class AbstractRegionMap
   }
 
   // method used for debugging tombstone count issues
-  public boolean verifyTombstoneCount(AtomicInteger numTombstones) {
+  public boolean verifyTombstoneCount(int numTombstones) {
     int deadEntries = 0;
     try {
       for (Iterator it = getEntryMap().values().iterator(); it.hasNext();) {
@@ -2598,7 +2602,7 @@ public abstract class AbstractRegionMap
           deadEntries++;
         }
       }
-      if (deadEntries != numTombstones.get()) {
+      if (deadEntries != numTombstones) {
         if (logger.isInfoEnabled()) {
           String message = "GEM-1722: tombstone count (" + numTombstones
               + ") does not match actual number of entries with tombstones (" + deadEntries + ")";
