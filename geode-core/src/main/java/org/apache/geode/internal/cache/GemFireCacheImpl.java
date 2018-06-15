@@ -746,9 +746,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    *             in to your method.
    */
   public static GemFireCacheImpl getForPdx(String reason) {
+    return getForPdx(reason, getAnyInstance());
+  }
 
-    InternalDistributedSystem system = getAnyInstance();
-    if (system == null) {
+  public static GemFireCacheImpl getForPdx(String reason, InternalDistributedSystem system) {
+      if (system == null) {
       throw new CacheClosedException(reason);
     }
     GemFireCacheImpl cache = (GemFireCacheImpl) system.getCache();

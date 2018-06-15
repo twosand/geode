@@ -1145,7 +1145,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
   /**
    * This method fixes bug 43643
    */
-  private static boolean checkPdxEquals(PdxInstance pdx, Object obj, InternalCache cache) {
+  public static boolean checkPdxEquals(PdxInstance pdx, Object obj, InternalCache cache) {
     if (!(obj instanceof PdxInstance)) {
       // obj may be a CachedDeserializable in which case we want to convert it to a PdxInstance even
       // if we are not readSerialized.

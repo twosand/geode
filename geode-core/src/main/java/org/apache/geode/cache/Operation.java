@@ -542,7 +542,7 @@ public final class Operation implements java.io.Serializable {
           OP_TYPE_GET_FOR_REGISTER_INTEREST, OP_DETAILS_NONE);
 
   /** The name of this mirror type. */
-  private final transient String name;
+  public final transient String name;
 
   /** byte used as ordinal to represent this Operation */
   public final byte ordinal;

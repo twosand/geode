@@ -111,9 +111,9 @@ public abstract class BaseCommand implements Command {
   private static final int MAX_INCOMING_MESSAGES =
       Integer.getInteger("BridgeServer.MAX_INCOMING_MSGS", -1);
 
-  private static final Semaphore INCOMING_DATA_LIMITER;
+  private static final Semaphore incomingDataLimiter;
 
-  private static final Semaphore INCOMING_MSG_LIMITER;
+  private static final Semaphore incomingMessageLimiter;
 
   static {
     Semaphore semaphore;
@@ -123,14 +123,14 @@ public abstract class BaseCommand implements Command {
     } else {
       semaphore = null;
     }
-    INCOMING_DATA_LIMITER = semaphore;
+    incomingDataLimiter = semaphore;
     if (MAX_INCOMING_MESSAGES > 0) {
       // unfair for best performance
       semaphore = new Semaphore(MAX_INCOMING_MESSAGES, false);
     } else {
       semaphore = null;
     }
-    INCOMING_MSG_LIMITER = semaphore;
+    incomingMessageLimiter = semaphore;
   }
 
   protected static byte[] okBytes() {
@@ -844,7 +844,7 @@ public abstract class BaseCommand implements Command {
     Message requestMsg = null;
     try {
       requestMsg = servConn.getRequestMessage();
-      requestMsg.receive(servConn, MAX_INCOMING_DATA, INCOMING_DATA_LIMITER, INCOMING_MSG_LIMITER);
+      requestMsg.receive(servConn, MAX_INCOMING_DATA, incomingDataLimiter, incomingMessageLimiter);
       return requestMsg;
     } catch (EOFException eof) {
       handleEOFException(null, servConn, eof);

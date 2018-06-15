@@ -55,7 +55,7 @@ public class Part {
    * The payload of this part. Could be null, a byte[] or a HeapDataOutputStream on the send side.
    * Could be null, or a byte[] on the receiver side.
    */
-  private Object part;
+  Object part;
 
   /** Is the payload (<code>part</code>) a serialized object? */
   private byte typeCode;
@@ -98,6 +98,24 @@ public class Part {
 
   public boolean isBytes() {
     return this.typeCode == BYTE_CODE || this.typeCode == EMPTY_BYTEARRAY_CODE;
+  }
+
+  public boolean isHeaderValid() {
+    byte header = this.getPartHeader();
+
+    if (header == DSCODE.RESERVED_FOR_FUTURE_USE.toByte() || header == DSCODE.ILLEGAL.toByte()) {
+      return false;
+    }
+    // Byte_code parts don't have a header
+    if (this.typeCode == BYTE_CODE) {
+      return true;
+    }
+    for (DSCODE c : DSCODE.values()) {
+      if (c.toByte() == header) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public void setPartState(byte[] b, boolean isObject) {
@@ -159,6 +177,14 @@ public class Part {
       return ((StoredObject) this.part).getDataSize();
     } else {
       return ((HeapDataOutputStream) this.part).size();
+    }
+  }
+
+  private byte getPartHeader() {
+    if (this.part == null) {
+      return (byte) 0;
+    } else {
+      return ((byte[]) this.part)[0];
     }
   }
 

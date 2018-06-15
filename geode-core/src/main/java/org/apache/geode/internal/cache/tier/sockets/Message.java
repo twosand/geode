@@ -139,13 +139,13 @@ public class Message {
   int numberOfParts = 0;
   protected int transactionId = TXManagerImpl.NOTX;
   int currentPart = 0;
-  private Part[] partsList = null;
+  protected Part[] partsList = null;
   private ByteBuffer cachedCommBuffer;
   protected Socket socket = null;
   private SocketChannel socketChannel = null;
   private OutputStream outputStream = null;
   protected InputStream inputStream = null;
-  private boolean messageModified = true;
+  protected boolean messageModified = true;
 
   /** is this message a retry of a previously sent message? */
   private boolean isRetry;
@@ -157,12 +157,16 @@ public class Message {
   private Semaphore dataLimiter = null;
   private Semaphore messageLimiter = null;
   private boolean readHeader = false;
-  private int chunkSize = DEFAULT_CHUNK_SIZE;
+  protected int chunkSize = DEFAULT_CHUNK_SIZE;
 
   Part securePart = null;
   private boolean isMetaRegion = false;
 
-  private Version version;
+  protected Version version;
+
+  protected Message() {
+    this.maxMessageSize = Integer.getInteger(MAX_MESSAGE_SIZE_PROPERTY, DEFAULT_MAX_MESSAGE_SIZE);
+  }
 
   /**
    * Creates a new message with the given number of parts
@@ -826,7 +830,7 @@ public class Message {
   /**
    * TODO: refactor overly long method readPayloadFields
    */
-  void readPayloadFields(final int numParts, final int len) throws IOException {
+  public void readPayloadFields(final int numParts, final int len) throws IOException {
     if (len > 0 && numParts <= 0 || len <= 0 && numParts > 0) {
       throw new IOException(
           LocalizedStrings.Message_PART_LENGTH_0_AND_NUMBER_OF_PARTS_1_INCONSISTENT

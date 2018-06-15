@@ -156,8 +156,6 @@ public abstract class ServerConnection implements Runnable {
   }
 
   protected Socket theSocket;
-  // private InputStream in = null;
-  // private OutputStream out = null;
   private ByteBuffer commBuffer;
   protected final CachedRegionHelper crHelper;
   protected String name = null;
@@ -165,9 +163,9 @@ public abstract class ServerConnection implements Runnable {
   // IMPORTANT: if new messages are added change setHandshake to initialize them
   // to the correct Version for serializing to the client
   private Message requestMsg = new Message(2, Version.CURRENT);
-  private Message replyMsg = new Message(1, Version.CURRENT);
-  private Message responseMsg = new Message(1, Version.CURRENT);
-  private Message errorMsg = new Message(1, Version.CURRENT);
+  private final Message replyMsg = new Message(1, Version.CURRENT);
+  private final Message responseMsg = new Message(1, Version.CURRENT);
+  private final Message errorMsg = new Message(1, Version.CURRENT);
 
   // IMPORTANT: if new messages are added change setHandshake to initialize them
   // to the correct Version for serializing to the client

@@ -77,6 +77,11 @@ public class HeapDataOutputStream extends OutputStream
     this(INITIAL_CAPACITY, version);
   }
 
+  protected HeapDataOutputStream() {
+
+    this.MIN_CHUNK_SIZE = INITIAL_CAPACITY;
+  };
+
   /**
    * Create a HeapDataOutputStream optimized to contain just the specified string. The string will
    * be written to this stream encoded as utf.

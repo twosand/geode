@@ -122,6 +122,7 @@ public class Destroy65 extends BaseCommand {
     regionNamePart = clientMessage.getPart(0);
     keyPart = clientMessage.getPart(1);
     expectedOldValuePart = clientMessage.getPart(2);
+
     try {
 
       operation = clientMessage.getPart(3).getObject();
