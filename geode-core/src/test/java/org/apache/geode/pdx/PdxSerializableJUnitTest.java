@@ -1370,7 +1370,7 @@ public class PdxSerializableJUnitTest {
 
     public static String FILE_NAME = "testFile.txt";
 
-    // additional fields from tests.util.ValueHolder
+    // additional fields from tests.util.ValueHolder2
     public char aChar;
     public boolean aBoolean;
     public byte aByte;
