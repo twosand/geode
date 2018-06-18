@@ -1,6 +1,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static com.sun.tools.doclint.Entity.part;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -10,12 +11,15 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
+import java.util.function.Consumer;
 
+import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -25,6 +29,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
@@ -49,11 +54,17 @@ public class HeapDataOutputStreamDUnitTest {
 
   @Test
   public void sendIncompleteMessage() throws Exception{
-    MemberVM server = cluster.startServerVM(0,
-        x -> x.withPDXReadSerialized().withRegion(RegionShortcut.REPLICATE, "regionA"));
-    ClientVM client = cluster.startClientVM(1, new Properties(),
-        x -> x.addPoolServer("localhost",
-        server.getPort()).setPoolSubscriptionEnabled(true));
+    MemberVM locator = cluster.startLocatorVM(0);
+    MemberVM server = cluster.startServerVM(1,
+        x -> x.withPDXReadSerialized()
+            .withConnectionToLocator(locator.getPort())
+            .withProperty(MAX_WAIT_TIME_RECONNECT, "4000")
+            .withRegion(RegionShortcut.REPLICATE, "regionA"));
+
+
+    int locatorPort = locator.getPort();
+    ClientVM client = cluster.startClientVM(2, new Properties(),
+        (Serializable & Consumer<ClientCacheFactory>) x -> x.addPoolLocator("localhost", locatorPort).setPoolSubscriptionEnabled(true));
 
     AsyncInvocation asyncInvocation = client.invokeAsync(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
@@ -62,14 +73,27 @@ public class HeapDataOutputStreamDUnitTest {
         try {
           regionA.destroy("A");
         } catch (EntryNotFoundException e) {
-          // expected
+          //System.out.println("destroy: " + e.getMessage());
         }
       }
     });
 
+    Thread thread = new Thread(() -> {
+      while (true) {
+        System.out.println("force disconnect");
+        server.forceDisconnectMember();
+        try {
+          Thread.sleep(8000);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      }
+    });
 
+    thread.start();
 
     asyncInvocation.await();
+    thread.join();
   }
 
   //  @Test
