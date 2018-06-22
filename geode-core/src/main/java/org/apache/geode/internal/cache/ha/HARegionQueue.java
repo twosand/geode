@@ -1374,22 +1374,27 @@ public class HARegionQueue implements RegionQueue {
       }
       object = (Conflatable) this.region.get(next);
       if (object != null) {
-        // peeked a object, so add the correponding counter to thread-context
+        // peeked a object, so add the corresponding counter to thread-context
         object = (object instanceof HAEventWrapper) ? (Conflatable) this.haContainer.get(object)
             : object;
 
-        if (object != null) { // Is it possible for object to be null...when?
-          List peekedEvents;
-          if ((peekedEvents = (List) HARegionQueue.peekedEventsContext.get()) != null) {
-            peekedEvents.add(next);
-          } else {
-            peekedEvents = new LinkedList();
-            peekedEvents.add(next);
-            HARegionQueue.peekedEventsContext.set(peekedEvents);
-          }
-          this.storePeekedID(next);
-          break;
+        // Fix for GEODE-5344 - Removing if (object != null) check here.
+        // It is possible that the object is null at this point as it is no longer in the
+        // HAContainer. This can occur when the QRM thread is already processing a list
+        // of events seen by the client and removes that event from the HAContainer as
+        // part of that processing at the same time this server becomes primary for that
+        // queue and then attempts to dispatch it. We must now skip this event to allow the
+        // dispatcher to process any subsequent events to the client.
+        List peekedEvents;
+        if ((peekedEvents = (List) HARegionQueue.peekedEventsContext.get()) != null) {
+          peekedEvents.add(next);
+        } else {
+          peekedEvents = new LinkedList();
+          peekedEvents.add(next);
+          HARegionQueue.peekedEventsContext.set(peekedEvents);
         }
+        this.storePeekedID(next);
+        break;
       }
     }
     // since size is zero, return null
