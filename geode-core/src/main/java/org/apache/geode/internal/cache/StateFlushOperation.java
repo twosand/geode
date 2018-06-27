@@ -98,6 +98,11 @@ public class StateFlushOperation {
 
   private DistributionManager dm;
 
+  private static void log(String message) {
+    // System.out.println(Thread.currentThread().getName() + ": " + message);
+    logger.warn("XXX " + message);
+  }
+
   /** flush current ops to the given members for the given region */
   public static void flushTo(Set<InternalDistributedMember> targets, DistributedRegion region) {
     DistributionManager dm = region.getDistributionManager();
@@ -223,6 +228,7 @@ public class StateFlushOperation {
       logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Sending {} with processor {}", smm,
           gfprocessor);
     }
+    log("StateFlushOperation.flush about to send smm=" + smm);
     Set failures = this.dm.putOutgoing(smm);
     if (failures != null) {
       if (failures.contains(target)) {
@@ -238,6 +244,7 @@ public class StateFlushOperation {
 
     try {
       gfprocessor.waitForReplies();
+      log("StateFlushOperation.flush received replies for smm=" + smm);
       if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
         logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Finished processing {}", smm);
       }
@@ -342,6 +349,8 @@ public class StateFlushOperation {
 
     @Override
     protected void process(ClusterDistributionManager dm) {
+      log("StateMarkerMessage.process message=" + this + "; relay="
+          + dm.getDistributionManagerId().equals(relayRecipient));
       logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Processing {}", this);
       if (dm.getDistributionManagerId().equals(relayRecipient)) {
         try {
@@ -373,6 +382,7 @@ public class StateFlushOperation {
           if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
             logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Sending {}", ga);
           }
+          log("StateMarkerMessage.process about to send message=" + ga);
           dm.putOutgoing(ga);
         }
       } else {
@@ -386,6 +396,7 @@ public class StateFlushOperation {
         gr.setRecipient((InternalDistributedMember) relayRecipient);
         gr.requestingMember = this.getSender();
         gr.processorId = processorId;
+        log("StateMarkerMessage.process created message=" + gr);
         try {
           Set<DistributedRegion> regions = getRegions(dm);
           for (DistributedRegion r : regions) {
@@ -431,6 +442,7 @@ public class StateFlushOperation {
           if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
             logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Sending {}", gr);
           }
+          log("StateMarkerMessage.process sending message=" + gr);
           dm.putOutgoing(gr);
         }
       }
@@ -444,7 +456,9 @@ public class StateFlushOperation {
           // ops
         }
         try {
+          log("StateMarkerMessage.waitForCurrentOperations waiting region=" + r.getFullPath());
           r.getDistributionAdvisor().waitForCurrentOperations();
+          log("StateMarkerMessage.waitForCurrentOperations done waiting region=" + r.getFullPath());
         } catch (RegionDestroyedException e) {
           // continue with the next region
         }
@@ -565,11 +579,17 @@ public class StateFlushOperation {
                 logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Waiting for channel states:  {}",
                     channelStateDescription(channelState));
               }
+              log("StateStabilizationMessage.run waiting for channel states: "
+                  + channelStateDescription(channelState));
               for (;;) {
                 dm.getCancelCriterion().checkCancelInProgress(null);
                 boolean interrupted = Thread.interrupted();
                 try {
+                  log("StateStabilizationMessage.run about to waitForMessageState sender="
+                      + getSender());
                   dm.getMembershipManager().waitForMessageState(getSender(), channelState);
+                  log("StateStabilizationMessage.run done waitForMessageState sender="
+                      + getSender());
                   break;
                 } catch (InterruptedException ignore) {
                   interrupted = true;
@@ -611,6 +631,7 @@ public class StateFlushOperation {
             if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
               logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Sending {}", ga);
             }
+            log("StateStabilizationMessage.run about to send message=" + ga);
             if (requestingMember.equals(dm.getDistributionManagerId())) {
               ga.dmProcess(dm);
             } else {
@@ -678,9 +699,8 @@ public class StateFlushOperation {
 
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
-      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
-        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Processing {}", this);
-      }
+      log("StateStabilizedMessage.process message=" + this);
+      logger.warn("XXX Processing {}", this);
       super.process(dm, processor);
     }
 
@@ -761,6 +781,7 @@ public class StateFlushOperation {
     @Override
     public void memberDeparted(DistributionManager distributionManager,
         final InternalDistributedMember id, final boolean crashed) {
+      log("StateFlushReplyProcessor.memberDeparted id=" + id);
       super.memberDeparted(distributionManager, id, crashed);
     }
 
@@ -768,6 +789,8 @@ public class StateFlushOperation {
     protected void processActiveMembers(Set activeMembers) {
       super.processActiveMembers(activeMembers);
       if (!activeMembers.contains(this.targetMember)) {
+        log("StateFlushReplyProcessor.processActiveMembers targetMemberHasLeft targetMember="
+            + this.targetMember);
         targetMemberHasLeft = true;
       }
     }
