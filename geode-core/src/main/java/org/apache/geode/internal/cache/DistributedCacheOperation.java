@@ -254,7 +254,13 @@ public abstract class DistributedCacheOperation {
     DistributedRegion region = getRegion();
     long viewVersion = -1;
     if (this.containsRegionContentChange()) {
+      if (this instanceof DistributedPutAllOperation) {
+        DISTRIBUTED_PUT_ALL_IN_PROGRESS.set(true);
+        logger.warn(
+            "XXX DistributedCacheOperation startOperation about to start operation msg=" + this);
+      }
       viewVersion = region.getDistributionAdvisor().startOperation();
+      DISTRIBUTED_PUT_ALL_IN_PROGRESS.set(false);
     }
     if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
       logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "dispatching operation in view version {}",
@@ -276,6 +282,9 @@ public abstract class DistributedCacheOperation {
     return viewVersion;
   }
 
+  public static ThreadLocal<Boolean> DISTRIBUTED_PUT_ALL_IN_PROGRESS =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
   /**
    * region's distribution advisor marked that a distribution is ended. This method should pair with
    * startOperation in try/finally block.
@@ -283,7 +292,13 @@ public abstract class DistributedCacheOperation {
   public void endOperation(long viewVersion) {
     DistributedRegion region = getRegion();
     if (viewVersion != -1) {
+      if (this instanceof DistributedPutAllOperation) {
+        DISTRIBUTED_PUT_ALL_IN_PROGRESS.set(true);
+      }
       region.getDistributionAdvisor().endOperation(viewVersion);
+      logger.warn(
+          "XXX DistributedCacheOperation endOperation operation msg=" + this);
+      DISTRIBUTED_PUT_ALL_IN_PROGRESS.set(false);
       if (logger.isTraceEnabled()) {
         logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
             "done dispatching operation in view version {}", viewVersion);
@@ -455,7 +470,7 @@ public abstract class DistributedCacheOperation {
         if (this instanceof DistributedPutAllOperation) {
           // if (logger.isDebugEnabled()) {
           logger.warn(
-              "XXX DistributedPutAllOperation _distribute recipients for {}: {} with adjunct messages to: {}",
+              "XXX DISTRIBUTED_PUT_ALL_OPERATION _distribute recipients for {}: {} with adjunct messages to: {}",
               this, recipients,
               adjunctRecipients);
           // }
@@ -610,7 +625,7 @@ public abstract class DistributedCacheOperation {
 
         if (failures != null && !failures.isEmpty()) {
           logger.warn(
-              "XXX DistributedPutAllOperation _distribute Failed sending ({}) to {} while processing event:{}",
+              "XXX DISTRIBUTED_PUT_ALL_OPERATION _distribute Failed sending ({}) to {} while processing event:{}",
               msg, failures, event);
         }
 

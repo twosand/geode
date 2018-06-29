@@ -98,7 +98,7 @@ public class StateFlushOperation {
 
   private DistributionManager dm;
 
-  private static void log(String message) {
+  public static void log(String message) {
     // System.out.println(Thread.currentThread().getName() + ": " + message);
     logger.warn("XXX " + message);
   }
@@ -506,7 +506,8 @@ public class StateFlushOperation {
     @Override
     public String toString() {
       return "StateMarkerMessage(requestingMember=" + this.getSender() + ",processorId="
-          + processorId + ",target=" + relayRecipient + ",region=" + regionPath + ")";
+          + processorId + ",target=" + relayRecipient + ",region=" + regionPath + ",flushNewOps="
+          + flushNewOps + ")";
     }
 
     @Override

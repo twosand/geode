@@ -1928,7 +1928,7 @@ public class TXState implements TXStateInterface {
    *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#postPutAll(org.apache.geode.internal.cache.
-   * DistributedPutAllOperation, java.util.Map, org.apache.geode.internal.cache.LocalRegion)
+   * DISTRIBUTED_PUT_ALL_OPERATION, java.util.Map, org.apache.geode.internal.cache.LocalRegion)
    */
   @Override
   public void postPutAll(final DistributedPutAllOperation putallOp,

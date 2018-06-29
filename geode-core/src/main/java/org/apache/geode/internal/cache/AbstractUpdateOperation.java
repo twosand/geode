@@ -42,7 +42,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * Common code for both UpdateOperation and DistributedPutAllOperation.
+ * Common code for both UpdateOperation and DISTRIBUTED_PUT_ALL_OPERATION.
  *
  */
 public abstract class AbstractUpdateOperation extends DistributedCacheOperation {
@@ -262,7 +262,8 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
     // @todo darrel: make this method static?
     /**
      * Do the actual update after operationOnRegion has confirmed work needs to be done Note this is
-     * the default implementation used by UpdateOperation. DistributedPutAllOperation overrides and
+     * the default implementation used by UpdateOperation. DISTRIBUTED_PUT_ALL_OPERATION overrides
+     * and
      * then calls back using super to this implementation. NOTE: be careful to not use methods like
      * getEvent(); defer to the ev passed as a parameter instead.
      */

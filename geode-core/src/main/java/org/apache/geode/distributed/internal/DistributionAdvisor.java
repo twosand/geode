@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.internal.cache.DistributedCacheOperation.DISTRIBUTED_PUT_ALL_IN_PROGRESS;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -40,6 +42,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.StateFlushOperation;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -626,6 +629,13 @@ public class DistributionAdvisor {
           synchronized (this.opCountLock) {
             previousVersionOpCount += currentVersionOpCount;
             currentVersionOpCount = 0;
+            logger.warn(
+                "XXX DistributionAdvisor doPutProfile advisee="
+                    + this.advisee.getFullPath() + "; membershipVersion=" + membershipVersion
+                    + "; previousVersionOpCount=" + previousVersionOpCount
+                    + "; currentVersionOpCount="
+                    + currentVersionOpCount,
+                new Exception());
           }
         }
       }
@@ -730,6 +740,12 @@ public class DistributionAdvisor {
       synchronized (this.opCountLock) {
         previousVersionOpCount += currentVersionOpCount;
         currentVersionOpCount = 0;
+        logger.warn(
+            "XXX DistributionAdvisor forceNewMembershipVersion advisee="
+                + this.advisee.getFullPath() + "; membershipVersion=" + membershipVersion
+                + "; previousVersionOpCount=" + previousVersionOpCount + "; currentVersionOpCount="
+                + currentVersionOpCount,
+            new Exception());
         if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE)) {
           logger.trace(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE,
               "advisor for {} forced new membership version to {} previousOpCount={}", getAdvisee(),
@@ -759,6 +775,12 @@ public class DistributionAdvisor {
         logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "StateFlush current opcount incremented: {}",
             currentVersionOpCount);
       }
+      if (DISTRIBUTED_PUT_ALL_IN_PROGRESS.get()) {
+        logger.warn(
+            "XXX DistributionAdvisor startOperation advisee=" + this.advisee.getFullPath()
+                + "; membershipVersion=" + membershipVersion + "; currentVersionOpCount="
+                + currentVersionOpCount);
+      }
     }
     return membershipVersion;
   }
@@ -776,13 +798,25 @@ public class DistributionAdvisor {
         currentVersionOpCount--;
         if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
           logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-              "StateFlush current opcount deccremented: {}", currentVersionOpCount);
+              "StateFlush current opcount decremented: {}", currentVersionOpCount);
+        }
+        if (DISTRIBUTED_PUT_ALL_IN_PROGRESS.get()) {
+          logger.warn(
+              "XXX DistributionAdvisor endOperation advisee=" + this.advisee.getFullPath()
+                  + "; version=" + version + "; membershipVersion=" + membershipVersion
+                  + "; currentVersionOpCount=" + currentVersionOpCount);
         }
       } else {
         previousVersionOpCount--;
         if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
           logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-              "StateFlush previous opcount incremented: {}", previousVersionOpCount);
+              "StateFlush previous opcount decremented: {}", previousVersionOpCount);
+        }
+        if (DISTRIBUTED_PUT_ALL_IN_PROGRESS.get()) {
+          logger.warn(
+              "XXX DistributionAdvisor endOperation advisee=" + this.advisee.getFullPath()
+                  + "; version=" + version + "; membershipVersion=" + membershipVersion
+                  + "; previousVersionOpCount=" + previousVersionOpCount);
         }
       }
     }
@@ -818,6 +852,8 @@ public class DistributionAdvisor {
       synchronized (this.opCountLock) {
         opCount = this.previousVersionOpCount;
       }
+      StateFlushOperation
+          .log("DistributionAdvisor.waitForCurrentOperations waiting opCount=" + opCount);
       if (opCount <= 0) {
         break;
       }

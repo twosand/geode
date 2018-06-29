@@ -2211,7 +2211,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Create PutAllPRMsgs for each bucket, and send them.
    *
-   * @param putAllOp DistributedPutAllOperation object.
+   * @param putAllOp DISTRIBUTED_PUT_ALL_OPERATION object.
    * @param successfulPuts not used in PartitionedRegion.
    */
   @Override

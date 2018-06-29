@@ -1844,7 +1844,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * create a PutAllPRMessage for notify-only and send it to all adjunct nodes. return a set of
    * members that should be attached to the operation's reply processor (if any)
    *
-   * @param dpao DistributedPutAllOperation object for PutAllMessage
+   * @param dpao DISTRIBUTED_PUT_ALL_OPERATION object for PutAllMessage
    * @param cacheOpRecipients set of receiver which got cacheUpdateOperation.
    * @param adjunctRecipients recipients that must unconditionally get the event
    * @param filterRoutingInfo routing information for all members having the region

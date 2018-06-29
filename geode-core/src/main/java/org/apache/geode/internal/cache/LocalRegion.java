@@ -10061,7 +10061,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @param key the cache key
    * @param value the cache value
-   * @param putallOp the DistributedPutAllOperation associated with the event
+   * @param putallOp the DISTRIBUTED_PUT_ALL_OPERATION associated with the event
    * @param tagHolder holder for version tag
    * @throws TimeoutException if the operation times out
    * @throws CacheWriterException if a cache writer objects to the update
