@@ -36,7 +36,7 @@ fi
 UNAME_O=$(uname -o)
 # Check for Windows (MINGW64) environment
 if [ ${UNAME_O} = "Msys" ]; then
-  export PATH="${PATH}:/c/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/platform/bundledpython"
+  export PATH="${PATH}:/c/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/platform/bundledpython:/c/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/platform/gsutil"
 fi
 
 GEODE_BUILD_VERSION_FILE=${BUILDROOT}/geode-build-version/number
