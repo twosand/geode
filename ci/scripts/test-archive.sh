@@ -39,6 +39,8 @@ if [ ${UNAME_O} = "Msys" ]; then
   export PATH="${PATH}:/c/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/platform/bundledpython:/c/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/platform/gsutil"
 fi
 
+env | sort
+
 GEODE_BUILD_VERSION_FILE=${BUILDROOT}/geode-build-version/number
 
 if [ ! -e "${GEODE_BUILD_VERSION_FILE}" ] && [ -z "${GEODE_PULL_REQUEST_ID}" ]; then
