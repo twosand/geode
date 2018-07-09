@@ -139,9 +139,19 @@ pushd ${GEODE_BUILD}
   set +e
   echo "Running tests"
   set -x
+  GRADLE_SPECIAL_OPTIONS=""
+  if [ "${GRADLE_TASK}" = ":geode-assembly:acceptanceTest" ]; then
+    GRADLE_SPECIAL_OPTIONS="--tests DeployWithLargeJarTest"
+  fi
+
+  if [ "${GRADLE_TASK}" = "integrationTest" ]; then
+    GRADLE_TASK="geode-core:integrationTest"
+    GRADLE_SPECIAL_OPTIONS="--tests AbstractLauncherIntegrationTest"
+  fi
+
 #    ./gradlew --no-daemon -x javadoc -x spotlessCheck :geode-assembly:acceptanceTest --tests org.apache.geode.management.internal.cli.commands.PutCommandWithJsonTest
   ./gradlew ${PARALLEL_DUNIT} ${DUNIT_PARALLEL_FORKS} ${DUNIT_DOCKER_IMAGE} \
-      --system-prop "java.io.tmpdir=${TMPDIR}" ${DEFAULT_GRADLE_TASK_OPTIONS} ${GRADLE_TASK_OPTIONS} ${GRADLE_TASK}
+      --system-prop "java.io.tmpdir=${TMPDIR}" ${DEFAULT_GRADLE_TASK_OPTIONS} ${GRADLE_TASK_OPTIONS} ${GRADLE_TASK} ${GRADLE_SPECIAL_OPTIONS}
   export GRADLE_EXIT_STATUS=$?
   set +x
 popd
