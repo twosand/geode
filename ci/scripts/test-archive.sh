@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e
+set -e -x
 
 export TERM=${TERM:-dumb}
 export BUILDROOT=$(pwd)
@@ -89,8 +89,8 @@ echo "TMPDIR = ${TMPDIR}"
 echo "GRADLE_TASK = ${GRADLE_TASK}"
 echo "BASE_FILENAME = ${BASE_FILENAME}"
 
+gcloud info
 gcloud config set account ${SERVICE_ACCOUNT}
-
 
 export FILENAME=${BASE_FILENAME}-${FULL_PRODUCT_VERSION}.tgz
 

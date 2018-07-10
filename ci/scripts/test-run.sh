@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e
+set -e -x
 
 export TERM=${TERM:-dumb}
 export BUILDROOT=$(pwd)
@@ -41,6 +41,8 @@ if [ -z ${MAINTENANCE_VERSION+x} ]; then
   echo "MAINTENANCE_VERSION is unset. Check your pipeline configuration and make sure this script is called properly."
   exit 1
 fi
+
+gcloud info
 
 EMAIL_SUBJECT="${BUILDROOT}/built-geode/subject"
 EMAIL_BODY="${BUILDROOT}/built-geode/body"
