@@ -89,8 +89,12 @@ echo "TMPDIR = ${TMPDIR}"
 echo "GRADLE_TASK = ${GRADLE_TASK}"
 echo "BASE_FILENAME = ${BASE_FILENAME}"
 
+set +e
 gcloud info
 gcloud config set account ${SERVICE_ACCOUNT}
+
+gsutil ls gs://files.apachegeode-ci.info/
+set -e
 
 export FILENAME=${BASE_FILENAME}-${FULL_PRODUCT_VERSION}.tgz
 
