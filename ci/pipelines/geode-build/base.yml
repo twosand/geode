@@ -47,6 +47,14 @@ resources:
   source:
     depth: 1
     uri: (( concat "https://github.com/" metadata.geode-fork "/geode.git" ))
+    branch: (( grab metadata.geode-build-branch ))
+    paths:
+    - ci/*
+- name: geode-ci-windows
+  type: git
+  source:
+    depth: 1
+    uri: (( concat "https://github.com/" metadata.geode-fork "/geode.git" ))
     branch: feature/GEODE-5212
     paths:
     - ci/*
@@ -95,7 +103,7 @@ groups:
   jobs:
   - Build
   - UITests
-- name: WindowsTests
+- name: Windows
   jobs:
   - Build
   - WindowsTests
@@ -207,38 +215,116 @@ jobs:
       - get: geode
         passed: [Build]
         trigger: true
-      - get: geode-ci
+      - get: geode-ci-windows
       - get: geode-build-version
         passed: [Build]
-    - aggregate:
-      - task: run-acceptance-tests
-        tags: [windows]
-        timeout: 8h
-        config:
-          inputs:
-          - name: geode
-          - name: geode-ci
-          - name: geode-build-version
-          outputs:
-          - name: built-geode
-          params:
-            CALL_STACK_TIMEOUT: 25200
-            DUNIT_PARALLEL_FORKS: 0
-            MAINTENANCE_VERSION: develop
-            PARALLEL_DUNIT: false
-            PUBLIC_BUCKET: ((!public-bucket))
-            SERVICE_ACCOUNT: ((!concourse-gcp-account))
-            JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
-            DOCKER_COMPOSE_LOCATION: "C:\\Progra~1\\Docker\\Docker\\resources\\bin\\docker-compose.exe"
-            DOCKER_LOCATION: "C:\\Progra~1\\Docker\\Docker\\resources\\bin\\docker.exe"
-          platform: windows
-          run:
-            path: c:\Progra~1\git\bin\bash.exe
-            args:
-              - geode-ci/ci/scripts/test-run.sh
-              #- :geode-assembly:acceptanceTest :geode-connectors:acceptanceTest
+    - task: run-acceptance-tests
+      tags: [windows]
+      timeout: 8h
+      config:
+        inputs:
+        - name: geode
+        - name: geode-ci-windows
+          path: geode-ci
+        - name: geode-build-version
+        outputs:
+        - name: built-geode
+        params:
+          CALL_STACK_TIMEOUT: 25200
+          DUNIT_PARALLEL_FORKS: 0
+          MAINTENANCE_VERSION: develop
+          PARALLEL_DUNIT: false
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
+          DOCKER_COMPOSE_LOCATION: "C:\\Progra~1\\Docker\\Docker\\resources\\bin\\docker-compose.exe"
+          DOCKER_LOCATION: "C:\\Progra~1\\Docker\\Docker\\resources\\bin\\docker.exe"
+        platform: windows
+        run:
+          path: c:\Progra~1\git\bin\bash.exe
+          args:
+            - geode-ci/ci/scripts/test-run.sh
+            #- :geode-assembly:acceptanceTest :geode-connectors:acceptanceTest
+            - :geode-assembly:acceptanceTest
+            - windows-acceptancetestfiles
+      ensure:
+        aggregate:
+        - task: archive-acceptance-test-results
+          tags: [windows]
+          config:
+            inputs:
+              - name: geode
+              - name: geode-ci-windows
+                path: geode-ci
+              - name: geode-build-version
+              - name: built-geode
+            params:
+              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              PUBLIC_BUCKET: ((!public-bucket))
+              JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
+            platform: windows
+            run:
+              path: c:\Progra~1\git\bin\bash.exe
+              args:
+              - geode-ci/ci/scripts/test-archive.sh
               - :geode-assembly:acceptanceTest
-              - win-acceptancetestfiles
+              - windows-acceptancetestfiles
+    - task: run-integration-tests
+      tags: [windows]
+      timeout: 8h
+      config:
+        inputs:
+        - name: geode
+        - name: geode-ci-windows
+          path: geode-ci
+        - name: geode-build-version
+        outputs:
+        - name: built-geode
+        params:
+          CALL_STACK_TIMEOUT: 25200
+          DUNIT_PARALLEL_FORKS: 0
+          MAINTENANCE_VERSION: develop
+          PARALLEL_DUNIT: false
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
+        platform: windows
+        run:
+          path: c:\Progra~1\git\bin\bash.exe
+          args:
+            - geode-ci/ci/scripts/test-run.sh
+            - integrationTest
+            - windows-integrationtestfiles
+#        on_failure:
+#          aggregate:
+#            - put: send-notification-email
+#              params:
+#                subject: built-geode/subject
+#                body: built-geode/body
+      ensure:
+        aggregate:
+        - task: archive-integration-test-results
+          tags: [windows]
+          config:
+            inputs:
+              - name: geode
+              - name: geode-ci-windows
+                path: geode-ci
+              - name: geode-build-version
+              - name: built-geode
+            params:
+              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              PUBLIC_BUCKET: ((!public-bucket))
+              JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
+            platform: windows
+            run:
+              path: c:\Progra~1\git\bin\bash.exe
+              args:
+              - geode-ci/ci/scripts/test-archive.sh
+              - :geode-assembly:acceptanceTest
+              - windows-acceptancetestfiles
 
 - name: DistributedTest
   serial: true
