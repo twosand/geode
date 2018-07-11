@@ -33,10 +33,13 @@ if [ -e "${GEODE_PULL_REQUEST_ID_FILE}" ]; then
   GEODE_PULL_REQUEST_ID=$(cat ${GEODE_PULL_REQUEST_ID_FILE})
 fi
 
+GCLOUD=gcloud
+GSUTIL=gsutil
 UNAME_O=$(uname -o)
 # Check for Windows (MINGW64) environment
 if [ ${UNAME_O} = "Msys" ]; then
-  export PATH="${PATH}:/c/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/platform/bundledpython:/c/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/platform/gsutil"
+  GCLOUD=gcloud.cmd
+  GSUTIL=gsutil.cmd
 fi
 
 env | sort
@@ -90,10 +93,10 @@ echo "GRADLE_TASK = ${GRADLE_TASK}"
 echo "BASE_FILENAME = ${BASE_FILENAME}"
 
 set +e
-gcloud info
-gcloud config set account ${SERVICE_ACCOUNT}
+$GCLOUD info
+$GCLOUD config set account ${SERVICE_ACCOUNT}
 
-gsutil ls gs://files.apachegeode-ci.info/
+$GSUTIL ls gs://files.apachegeode-ci.info/
 set -e
 
 export FILENAME=${BASE_FILENAME}-${FULL_PRODUCT_VERSION}.tgz
@@ -125,7 +128,7 @@ if [ ! -d "${GEODE_BUILD}/build/reports/combined" ]; then
 fi
 
 pushd ${GEODE_BUILD}/build/reports/combined
-gsutil -q -m cp -r * gs://${TEST_RESULTS_DESTINATION}
+$GSUTIL -q -m cp -r * gs://${TEST_RESULTS_DESTINATION}
 popd
 
 echo ""
@@ -134,7 +137,7 @@ printf "\033[92mhttp://${TEST_RESULTS_DESTINATION}\033[0m\n"
 printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
 printf "\n"
 
-gsutil cp ${DEST_DIR}/${FILENAME} gs://${TEST_ARTIFACTS_DESTINATION}
+$GSUTIL cp ${DEST_DIR}/${FILENAME} gs://${TEST_ARTIFACTS_DESTINATION}
 
 printf "\033[92mTest artifacts from this job are available at:\033[0m\n"
 printf "\n"
