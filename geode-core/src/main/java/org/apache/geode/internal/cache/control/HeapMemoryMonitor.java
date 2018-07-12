@@ -54,7 +54,8 @@ import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.LocalStatListener;
-import org.apache.geode.internal.statistics.StatisticsManager;
+import org.apache.geode.internal.statistics.StatisticsImpl;
+import org.apache.geode.stats.common.internal.cache.control.ResourceManagerStats;
 
 /**
  * Allows for the setting of eviction and critical thresholds. These thresholds are compared against
@@ -289,7 +290,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       }
 
       // Stop the stats listener
-      final GemFireStatSampler sampler = this.cache.getInternalDistributedSystem().getStatSampler();
+      final GemFireStatSampler sampler = this.cache.getInternalDistributedSystem()
+          .getInternalDistributedSystemStats().getStatSampler();
       if (sampler != null) {
         sampler.removeLocalStatListener(this.statListener);
       }
@@ -316,7 +318,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
    * @return True of the listener was correctly started, false otherwise.
    */
   private boolean startCacheStatListener() {
-    final GemFireStatSampler sampler = this.cache.getInternalDistributedSystem().getStatSampler();
+    final GemFireStatSampler sampler = this.cache.getInternalDistributedSystem()
+        .getInternalDistributedSystemStats().getStatSampler();
     if (sampler == null) {
       return false;
     }
