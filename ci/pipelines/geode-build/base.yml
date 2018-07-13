@@ -106,7 +106,8 @@ groups:
 - name: Windows
   jobs:
   - Build
-  - WindowsTests
+  - WindowsAcceptanceTests
+  - WindowsIntegrationTests
 
 jobs:
 - name: Build
@@ -207,7 +208,7 @@ jobs:
         run:
           path: geode-ci/ci/scripts/update-passing-ref.sh
 
-- name: WindowsTests
+- name: WindowsAcceptanceTests
   serial: true
   public: true
   plan:
@@ -219,7 +220,7 @@ jobs:
       - get: geode-build-version
         passed: [Build]
     - task: run-acceptance-tests
-      tags: [windows]
+      tags: [windows-acceptance-tests]
       timeout: 8h
       config:
         inputs:
@@ -250,7 +251,7 @@ jobs:
       ensure:
         aggregate:
         - task: archive-acceptance-test-results
-          tags: [windows]
+          tags: [windows-acceptance-tests]
           config:
             inputs:
               - name: geode
@@ -270,8 +271,20 @@ jobs:
               - geode-ci/ci/scripts/test-archive.sh
               - :geode-assembly:acceptanceTest
               - windows-acceptancetestfiles
+
+- name: WindowsIntegrationTests
+  serial: true
+  public: true
+  plan:
+    - aggregate:
+      - get: geode
+        passed: [Build]
+        trigger: true
+      - get: geode-ci-windows
+      - get: geode-build-version
+        passed: [Build]
     - task: run-integration-tests
-      tags: [windows]
+      tags: [windows-integration-tests]
       timeout: 8h
       config:
         inputs:
@@ -299,7 +312,7 @@ jobs:
       ensure:
         aggregate:
         - task: archive-integration-test-results
-          tags: [windows]
+          tags: [windows-integration-tests]
           config:
             inputs:
               - name: geode
