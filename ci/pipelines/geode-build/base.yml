@@ -219,6 +219,17 @@ jobs:
       - get: geode-ci-windows
       - get: geode-build-version
         passed: [Build]
+    - task: cleanup-java-processes
+      tags: [windows-acceptance-tests]
+      config:
+        platform: windows
+        run:
+          path: powershell
+          args:
+          - -command
+          - |
+            gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
+            kill -name java
     - task: run-acceptance-tests
       tags: [windows-acceptance-tests]
       timeout: 8h
@@ -283,6 +294,17 @@ jobs:
       - get: geode-ci-windows
       - get: geode-build-version
         passed: [Build]
+    - task: cleanup-java-processes
+      tags: [windows-integration-tests]
+      config:
+        platform: windows
+        run:
+          path: powershell
+          args:
+          - -command
+          - |
+            gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
+            kill -name java
     - task: run-integration-tests
       tags: [windows-integration-tests]
       timeout: 8h

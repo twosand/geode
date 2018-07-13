@@ -1,0 +1,190 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+
+resource_types:
+  - name: gcs-resource
+    type: docker-image
+    source:
+      repository: frodenas/gcs-resource
+
+resources:
+- name: geode
+  type: git
+  source:
+    uri: (( concat "https://github.com/" metadata.geode-fork "/geode.git" ))
+    branch: develop
+    ignore_paths:
+    - ci/*
+- name: geode-ci
+  type: git
+  source:
+    depth: 1
+    uri: (( concat "https://github.com/" metadata.geode-fork "/geode.git" ))
+    branch: feature/GEODE-5212
+    paths:
+    - ci/*
+- name: geode-build-version
+  type: semver
+  source:
+    driver: gcs
+    bucket: ((!concourse-bucket))
+    key: (( concat metadata.geode-build-branch "/version" ))
+    json_key: ((!concourse-gcp-key))
+    initial_version: 1.3.0
+
+jobs:
+- name: WindowsAcceptanceTests
+  serial: true
+  plan:
+    - aggregate:
+      - get: geode
+        trigger: true
+      - get: geode-ci
+      - get: geode-build-version
+    - task: cleanup-java-processes
+      tags: [windows-acceptance-tests]
+      config:
+        platform: windows
+        run:
+          path: powershell
+          args:
+          - -command
+          - |
+            gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
+            kill -name java
+            exit 0
+    - task: run-acceptance-tests
+      tags: [windows-acceptance-tests]
+      timeout: 8h
+      config:
+        inputs:
+          - name: geode
+          - name: geode-ci
+          - name: geode-build-version
+        outputs:
+          - name: built-geode
+        params:
+          CALL_STACK_TIMEOUT: 25200
+          DUNIT_PARALLEL_FORKS: 0
+          MAINTENANCE_VERSION: develop
+          PARALLEL_DUNIT: false
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
+          DOCKER_COMPOSE_LOCATION: "C:\\Progra~1\\Docker\\Docker\\resources\\bin\\docker-compose.exe"
+          DOCKER_LOCATION: "C:\\Progra~1\\Docker\\Docker\\resources\\bin\\docker.exe"
+        platform: windows
+        run:
+          path: c:\Progra~1\git\bin\bash.exe
+          args:
+            - geode-ci/ci/scripts/test-run.sh
+            #- :geode-assembly:acceptanceTest :geode-connectors:acceptanceTest
+            - :geode-assembly:acceptanceTest
+            - windows-acceptancetestfiles
+      ensure:
+        aggregate:
+        - task: archive-acceptance-test-results
+          tags: [windows-acceptance-tests]
+          config:
+            inputs:
+              - name: geode
+              - name: geode-ci
+              - name: geode-build-version
+              - name: built-geode
+            params:
+              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              PUBLIC_BUCKET: ((!public-bucket))
+              JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
+            platform: windows
+            run:
+              path: c:\Progra~1\git\bin\bash.exe
+              args:
+              - geode-ci/ci/scripts/test-archive.sh
+              - :geode-assembly:acceptanceTest
+              - windows-acceptancetestfiles
+
+- name: WindowsIntegrationTests
+  serial: true
+  plan:
+    - aggregate:
+      - get: geode
+        passed: [WindowsAcceptanceTests]
+        trigger: true
+      - get: geode-ci
+      - get: geode-build-version
+    - task: cleanup-java-processes
+      tags: [windows-integration-tests]
+      config:
+        platform: windows
+        run:
+          path: powershell
+          args:
+          - -command
+          - |
+            gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
+            kill -name java
+            exit 0
+    - task: run-integration-tests
+      tags: [windows-integration-tests]
+      timeout: 8h
+      config:
+        inputs:
+          - name: geode
+          - name: geode-ci
+          - name: geode-build-version
+        outputs:
+          - name: built-geode
+        params:
+          CALL_STACK_TIMEOUT: 25200
+          DUNIT_PARALLEL_FORKS: 0
+          MAINTENANCE_VERSION: develop
+          PARALLEL_DUNIT: false
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
+        platform: windows
+        run:
+          path: c:\Progra~1\git\bin\bash.exe
+          args:
+            - geode-ci/ci/scripts/test-run.sh
+            - integrationTest
+            - windows-integrationtestfiles
+      ensure:
+        aggregate:
+        - task: archive-integration-test-results
+          tags: [windows-integration-tests]
+          config:
+            inputs:
+              - name: geode
+              - name: geode-ci
+              - name: geode-build-version
+              - name: built-geode
+            params:
+              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              PUBLIC_BUCKET: ((!public-bucket))
+              JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
+            platform: windows
+            run:
+              path: c:\Progra~1\git\bin\bash.exe
+              args:
+                - geode-ci/ci/scripts/test-archive.sh
+                - integrationTest
+                - windows-integrationtestfiles
