@@ -91,7 +91,7 @@ jobs:
           DOCKER_LOCATION: "C:\\Progra~1\\Docker\\Docker\\resources\\bin\\docker.exe"
         platform: windows
         run:
-          path: c:\Progra~1\git\bin\bash.exe
+          path: bash
           args:
             - geode-ci/ci/scripts/test-run.sh
             #- :geode-assembly:acceptanceTest :geode-connectors:acceptanceTest
@@ -114,7 +114,7 @@ jobs:
               JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
             platform: windows
             run:
-              path: c:\Progra~1\git\bin\bash.exe
+              path: bash
               args:
               - geode-ci/ci/scripts/test-archive.sh
               - :geode-assembly:acceptanceTest
@@ -161,7 +161,7 @@ jobs:
           JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
         platform: windows
         run:
-          path: c:\Progra~1\git\bin\bash.exe
+          path: bash
           args:
             - geode-ci/ci/scripts/test-run.sh
             - integrationTest
@@ -183,7 +183,7 @@ jobs:
               JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
             platform: windows
             run:
-              path: c:\Progra~1\git\bin\bash.exe
+              path: bash
               args:
                 - geode-ci/ci/scripts/test-archive.sh
                 - integrationTest
