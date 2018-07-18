@@ -192,6 +192,10 @@ public class HARegion extends DistributedRegion {
 
       // <HA overflow>
       if (conflatable instanceof HAEventWrapper) {
+        logger.info("RYGUY: Invalidate Decrementing Event ID: " + event.hashCode() + "; Region: "
+            + this.owningQueue.getRegion().getName() + "; System identity: "
+            + System.identityHashCode(event) + "; ToString: " + event);
+
         this.owningQueue.decAndRemoveFromHAContainer((HAEventWrapper) conflatable);
       }
       // </HA overflow>
