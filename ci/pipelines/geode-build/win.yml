@@ -67,7 +67,7 @@ jobs:
           - -command
           - |
             gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
-            kill -name java
+            kill -name java -force
             exit 0
     - task: run-acceptance-tests
       tags: [windows-acceptance-tests]
@@ -138,7 +138,7 @@ jobs:
           - -command
           - |
             gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
-            kill -name java
+            kill -name java -force
             exit 0
     - task: run-integration-tests
       tags: [windows-integration-tests]
