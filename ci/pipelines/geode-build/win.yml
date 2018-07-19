@@ -86,7 +86,7 @@ jobs:
           PARALLEL_DUNIT: false
           PUBLIC_BUCKET: ((!public-bucket))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
-          JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
+          JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
           DOCKER_COMPOSE_LOCATION: "C:\\Progra~1\\Docker\\Docker\\resources\\bin\\docker-compose.exe"
           DOCKER_LOCATION: "C:\\Progra~1\\Docker\\Docker\\resources\\bin\\docker.exe"
         platform: windows
@@ -111,7 +111,7 @@ jobs:
               MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
               SERVICE_ACCOUNT: ((!concourse-gcp-account))
               PUBLIC_BUCKET: ((!public-bucket))
-              JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
+              JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
             platform: windows
             run:
               path: bash
@@ -157,7 +157,7 @@ jobs:
           PARALLEL_DUNIT: false
           PUBLIC_BUCKET: ((!public-bucket))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
-          JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
+          JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
         platform: windows
         run:
           path: bash
@@ -179,7 +179,7 @@ jobs:
               MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
               SERVICE_ACCOUNT: ((!concourse-gcp-account))
               PUBLIC_BUCKET: ((!public-bucket))
-              JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_172"
+              JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
             platform: windows
             run:
               path: bash
