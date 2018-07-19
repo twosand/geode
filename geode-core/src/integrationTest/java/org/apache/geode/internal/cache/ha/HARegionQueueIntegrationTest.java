@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.spy;
@@ -137,6 +136,7 @@ public class HARegionQueueIntegrationTest {
         new ClientProxyMembershipID(), new EventID(cache.getDistributedSystem()));
     HAEventWrapper wrapper = new HAEventWrapper(message);
     wrapper.setHAContainer(haContainerWrapper);
+    wrapper.incrementPutRefCount();
 
     // Create and update HARegionQueues forcing one queue to startGiiQueueing
     int numQueues = 10;
@@ -147,16 +147,17 @@ public class HARegionQueueIntegrationTest {
     assertEquals(1, haContainerWrapper.size());
 
     HAEventWrapper wrapperInContainer = (HAEventWrapper) haContainerWrapper.getKey(wrapper);
-    assertEquals(numQueues, wrapperInContainer.getReferenceCount());
+    assertEquals(numQueues - 1, wrapperInContainer.getReferenceCount());
+    assertTrue(wrapperInContainer.getPutInProgress());
 
-    // Verify that the HAEventWrapper in the giiQueue now has msg = null
-    // this gets set to null when wrapper is added to HAContainer (for non-gii queues)
+    // Verify that the HAEventWrapper in the giiQueue now has msg != null
+    // We don't null this out while putInProgress > 0 (true)
     Queue giiQueue = targetQueue.getGiiQueue();
     assertEquals(1, giiQueue.size());
 
     HAEventWrapper giiQueueEntry = (HAEventWrapper) giiQueue.peek();
     assertNotNull(giiQueueEntry);
-    assertNull(giiQueueEntry.getClientUpdateMessage());
+    assertNotNull(giiQueueEntry.getClientUpdateMessage());
 
     // endGiiQueueing and verify queue empty and putEventInHARegion invoked with HAEventWrapper
     // not ClientUpdateMessageImpl

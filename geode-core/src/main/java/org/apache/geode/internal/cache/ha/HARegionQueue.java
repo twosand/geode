@@ -614,15 +614,8 @@ public class HARegionQueue implements RegionQueue {
         if (object instanceof HAEventWrapper) {
           HAEventWrapper wrapper = (HAEventWrapper) object;
 
-          boolean cumiNull = wrapper.getClientUpdateMessage() == null;
-          // bug #43609 - prevent loss of the message while in the queue
-          logger.info("RYGUY: GII Queueing - Putting conditionally into HA container. Event ID: "
-              + wrapper.hashCode() + "; System ID: " + System.identityHashCode(wrapper)
-              + "; CUMI Null: "
-              + cumiNull + "; ToString: "
-              + wrapper);
+          // use to putRefCount to prevent loss of the message while in the queue
           wrapper.incrementPutRefCount();
-          putEntryConditionallyIntoHAContainer(wrapper);
         }
 
         this.giiQueue.add(object);
@@ -775,19 +768,11 @@ public class HARegionQueue implements RegionQueue {
               logger.debug("{} draining #{}: {}", this.regionName, (actualCount + 1), value);
             }
             if (value instanceof HAEventWrapper) {
-              // TODO: RYGUY: This is a bandaid and we may not need it.
               if (((HAEventWrapper) value).getClientUpdateMessage() == null) {
-                // if there is no wrapped message look for it in the HA container map
-                ClientUpdateMessageImpl haContainerMessage =
-                    (ClientUpdateMessageImpl) haContainer.get(value);
-                if (haContainerMessage != null) {
-                  ((HAEventWrapper) value).setClientUpdateMessage(haContainerMessage);
-                } else {
-                  logger.info(
-                      "RYGUY: {} ATTENTION: found gii queued event with null event message.  Please see bug #44852: {}",
-                      this.regionName, value);
-                  continue;
-                }
+                logger.info(
+                    "RYGUY: {} ATTENTION: found gii queued event with null event message.  Please see bug #44852: {}",
+                    this.regionName, value);
+                continue;
               }
             }
             basicPut(value);
@@ -795,26 +780,11 @@ public class HARegionQueue implements RegionQueue {
             // incremented when it was queued in giiQueue.
             if (value instanceof HAEventWrapper) {
               HAEventWrapper wrapper = (HAEventWrapper) value;
-
               wrapper.decrementPutRefCount();
-
+              // if putInProgress is false, the clientUpdateMessage is safely in the HAContainer
               if (!wrapper.getPutInProgress()) {
                 wrapper.setClientUpdateMessage(null);
               }
-
-              // TODO: RYGUY: The put ref count should cover us and we no longer need to bump/dec
-              // the
-              // HAEventWrapper ref count. If the wrapper was removed from the container, say by
-              // QRM, we will
-              // just do putIfAbsent and add it back in. The CUMI will not be null because we had
-              // not decremented
-              // the putRefCount yet when we did basicPut().
-
-              logger.info("RYGUY: GII Decrementing Event ID: " + wrapper.hashCode() + "; Region: "
-                  + this.regionName + "; System identity: "
-                  + System.identityHashCode(wrapper) + "; ToString: " + wrapper);
-
-              decAndRemoveFromHAContainer((HAEventWrapper) value);
             }
           } catch (NoSuchElementException ignore) {
             break;
@@ -3609,7 +3579,7 @@ public class HARegionQueue implements RegionQueue {
             // After the initial put to the container, the client update message is set to null.
             // Therefore we check if it is null and only add client CQs and interest lists if it
             // is not.
-            if (haContainerKey.getClientUpdateMessage() != null) {
+            if (inputHaEventWrapper.getClientUpdateMessage() != null) {
               addClientCQsAndInterestList(haContainerEntry, inputHaEventWrapper,
                   this.haContainer, this.regionName);
             }
@@ -3725,8 +3695,6 @@ public class HARegionQueue implements RegionQueue {
         for (int i = 0; i < wrapperArray.length; i++) {
           wrapperSet.add(this.region.get(wrapperArray[i]));
         }
-
-        logger.info("RYGUY: Destroying HARegion in updateHAContainer()", new Exception());
 
         // Start a new thread which will update the clientMessagesRegion for
         // each of the HAEventWrapper instances present in the wrapperSet

@@ -1755,6 +1755,47 @@ public class HARegionQueueJUnitTest {
     verify(mockHAContainer, times(1)).remove(mockHAEventWrapper);
   }
 
+  @Test
+  public void testPutEntryConditionallyIntoHAContainerUpdatesInterestList() throws Exception {
+    final String haRegionName = testName.getMethodName();
+
+    HARegionQueue regionQueue =
+        createHARegionQueue(haRegionName, HARegionQueue.BLOCKING_HA_QUEUE);
+
+    ClientProxyMembershipID mockClientProxyMembershipId = mock(ClientProxyMembershipID.class);
+    CacheClientProxy mockCacheClientProxy = mock(CacheClientProxy.class);
+
+    doReturn(mockClientProxyMembershipId).when(mockCacheClientProxy).getProxyID();
+    ((HAContainerWrapper) regionQueue.haContainer).putProxy(haRegionName, mockCacheClientProxy);
+
+    EventID mockEventID = mock(EventID.class);
+    ClientUpdateMessageImpl mockClientUpdateMessage = mock(ClientUpdateMessageImpl.class);
+    mockClientUpdateMessage.setEventIdentifier(mockEventID);
+
+    doReturn(true).when(mockClientUpdateMessage)
+        .isClientInterestedInUpdates(mockClientProxyMembershipId);
+
+    HAEventWrapper originalHAEventWrapper = new HAEventWrapper(mockEventID);
+    originalHAEventWrapper.setClientUpdateMessage(mockClientUpdateMessage);
+
+    // allow putInProgress to be false (so we null out the msg field in the wrapper)
+    regionQueue.putEntryConditionallyIntoHAContainer(originalHAEventWrapper);
+
+    // the initial haContainer.putIfAbsent() doesn't need to invoke addClientInterestList
+    // as it is already part of the original message
+    verify(mockClientUpdateMessage, times(0)).addClientInterestList(mockClientProxyMembershipId,
+        true);
+
+    // create a new wrapper with the same id and message
+    HAEventWrapper newHAEventWrapper = new HAEventWrapper(mockEventID);
+    newHAEventWrapper.setClientUpdateMessage(mockClientUpdateMessage);
+
+    regionQueue.putEntryConditionallyIntoHAContainer(newHAEventWrapper);
+
+    // Verify that the original haContainerEntry gets the updated clientInterestList
+    verify(mockClientUpdateMessage, times(1)).addClientInterestList(mockClientProxyMembershipId,
+        true);
+  }
 
   /**
    * Wait until a given runnable stops throwing exceptions. It should take at least
