@@ -49,6 +49,76 @@ resources:
     initial_version: 1.3.0
 
 jobs:
+- name: WindowsUnitTests
+  serial: true
+  plan:
+    - aggregate:
+      - get: geode
+        trigger: true
+      - get: geode-ci
+      - get: geode-build-version
+    - task: cleanup-java-processes
+      tags: [windows-unit-tests]
+      config:
+        platform: windows
+        run:
+          path: powershell
+          args:
+          - -command
+          - |
+            gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
+            kill -name java -force
+            exit 0
+    - task: run-unit-tests
+      tags: [windows-unit-tests]
+      timeout: 8h
+      config:
+        inputs:
+          - name: geode
+          - name: geode-ci
+          - name: geode-build-version
+        outputs:
+          - name: built-geode
+        params:
+          CALL_STACK_TIMEOUT: 25200
+          DUNIT_PARALLEL_FORKS: 0
+          MAINTENANCE_VERSION: develop
+          PARALLEL_DUNIT: false
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
+          DOCKER_COMPOSE_LOCATION: "C:\\Progra~1\\Docker\\Docker\\resources\\bin\\docker-compose.exe"
+          DOCKER_LOCATION: "C:\\Progra~1\\Docker\\Docker\\resources\\bin\\docker.exe"
+        platform: windows
+        run:
+          path: bash
+          args:
+            - geode-ci/ci/scripts/test-run.sh
+            - test
+            - windows-unittestfiles
+      ensure:
+        aggregate:
+        - task: archive-unit-test-results
+          tags: [windows-unit-tests]
+          config:
+            inputs:
+              - name: geode
+              - name: geode-ci
+              - name: geode-build-version
+              - name: built-geode
+            params:
+              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              PUBLIC_BUCKET: ((!public-bucket))
+              JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
+            platform: windows
+            run:
+              path: bash
+              args:
+              - geode-ci/ci/scripts/test-archive.sh
+              - test
+              - windows-unittestfiles
+
 - name: WindowsAcceptanceTests
   serial: true
   plan:
