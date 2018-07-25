@@ -39,14 +39,6 @@ resources:
     branch: feature/GEODE-5212
     paths:
     - ci/*
-- name: geode-ci-dunit
-  type: git
-  source:
-    depth: 1
-    uri: (( concat "https://github.com/" metadata.geode-fork "/geode.git" ))
-    branch: feature/GEODE-5212-specific-category
-    paths:
-    - ci/*
 - name: geode-build-version
   type: semver
   source:
@@ -203,7 +195,7 @@ jobs:
     - aggregate:
       - get: geode
         trigger: true
-      - get: geode-ci-dunit
+      - get: geode-ci
       - get: geode-build-version
     - task: cleanup-java-processes
       tags: [windows-distributed-tests]
@@ -224,7 +216,7 @@ jobs:
       config:
         inputs:
           - name: geode
-          - name: geode-ci-dunit
+          - name: geode-ci
           - name: geode-build-version
         platform: windows
         outputs:
@@ -240,7 +232,7 @@ jobs:
         run:
           path: bash
           args:
-          - geode-ci-dunit/ci/scripts/test-run.sh
+          - geode-ci/ci/scripts/test-run.sh
           - distributedTest
           - windows-gfshdistributedtest
           - org.apache.geode.test.junit.categories.GfshTest
@@ -251,7 +243,7 @@ jobs:
           config:
             inputs:
               - name: geode
-              - name: geode-ci-dunit
+              - name: geode-ci
               - name: geode-build-version
               - name: built-geode
             platform: windows
@@ -263,6 +255,6 @@ jobs:
             run:
               path: bash
               args:
-              - geode-ci-dunit/ci/scripts/test-archive.sh
+              - geode-ci/ci/scripts/test-archive.sh
               - distributedTest
               - windows-gfshdistributedtest
