@@ -133,15 +133,6 @@ subprojects {
     outputs.upToDateWhen{false}
   }
 
-  task gfshDistributedTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.GfshTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    forkEvery 1
-    outputs.upToDateWhen{false}
-  }
-
   task flakyTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.FlakyTest'

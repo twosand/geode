@@ -23,6 +23,7 @@ export BUILDROOT=$(pwd)
 export DEST_DIR=${BUILDROOT}/built-geode
 export GRADLE_TASK=${1}
 export BASE_FILENAME=${2}
+export GRADLE_TEST_CATEGORY=${3}
 export TMPDIR=${DEST_DIR}/tmp
 export GEODE_BUILD=${DEST_DIR}/test
 export GEODE_BUILD_VERSION_NUMBER=$(grep "versionNumber *=" geode/gradle.properties | awk -F "=" '{print $2}' | tr -d ' ')
@@ -113,6 +114,10 @@ if [ -e ${DOCKER_RESOURCE}/rootfs.tar ]; then
 fi
 
 DEFAULT_GRADLE_TASK_OPTIONS="--no-daemon -x javadoc -x spotlessCheck"
+
+if [[ -n "${GRADLE_TEST_CATEGORY}" ]]; then
+  GRADLE_TASK_OPTIONS="-PtestCategory=${GRADLE_TEST_CATEGORY}"
+fi
 
 mkdir -p ${GEODE_BUILD}
 if [ -v CALL_STACK_TIMEOUT ]; then
