@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -385,6 +386,10 @@ public class BackupIntegrationTest {
     List<String> command = new ArrayList<>();
 
     System.out.println("EXECUTING:" + script.getCanonicalPath());
+
+    List<String> scriptContent = Files.readAllLines(script.toPath());
+    scriptContent.forEach(i -> System.out.println("CONTENT: " + i));
+
     boolean isWindows = script.getName().endsWith("bat");
     if (isWindows) {
       command.add("cmd.exe");
