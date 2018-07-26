@@ -124,7 +124,7 @@ class RestoreScript {
       String[] backupFiles = backup.list();
       boolean backupHasFiles =
           backup.isDirectory() && backupFiles != null && backupFiles.length != 0;
-//      backup = outputDir.relativize(backup.toPath()).toFile();
+      // backup = outputDir.relativize(backup.toPath()).toFile();
       File original = entry.getValue();
       if (original.isDirectory()) {
         generator.writeCopyDirectoryContents(writer, backup, original, backupHasFiles);
