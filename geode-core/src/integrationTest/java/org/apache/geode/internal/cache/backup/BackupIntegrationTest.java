@@ -391,12 +391,15 @@ public class BackupIntegrationTest {
     scriptContent.forEach(i -> System.out.println("CONTENT: " + i));
 
     boolean isWindows = script.getName().endsWith("bat");
-    // if (isWindows) {
-    // command.add("cmd.exe");
-    // command.add("/c");
-    // }
+    if (isWindows) {
+      command.add("cmd.exe");
+      command.add("/c");
+      command.add(String.format("cd /d %s && %s",
+          script.getCanonicalFile().toPath().getParent().toString(), script.getCanonicalPath()));
+    } else {
+      command.add(script.getCanonicalPath());
+    }
 
-    command.add(script.getCanonicalPath());
     ProcessBuilder pb = new ProcessBuilder(command);
     pb.redirectErrorStream(true);
     Process process = pb.start();
