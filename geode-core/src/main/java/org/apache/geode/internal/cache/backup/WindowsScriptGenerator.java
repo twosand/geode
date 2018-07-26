@@ -39,6 +39,8 @@ class WindowsScriptGenerator implements ScriptGenerator {
     writer.newLine();
     writer.write(CD_TO_SCRIPT_DIR);
     writer.newLine();
+    writer.write("dir");
+    writer.newLine();
   }
 
   @Override
