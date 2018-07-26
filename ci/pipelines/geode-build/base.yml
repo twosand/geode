@@ -26,6 +26,13 @@ resource_types:
     type: docker-image
     source:
       repository: pcfseceng/email-resource
+  - name: concourse-metadata-resource
+    type: docker-image
+    source:
+      username: ((!docker-username))
+      password: ((!docker-password))
+      repository: gcr.io/apachegeode-ci/((!docker-image-prefix))concourse-metadata-resource
+      tag: latest
 
 resources:
 - name: docker-geode-build-image
@@ -33,11 +40,19 @@ resources:
   source:
     username: ((!docker-username))
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((!docker-image-name))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))((!docker-image-name))
+    tag: latest
+- name: alpine-tools-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))alpine-tools
     tag: latest
 - name: geode
   type: git
   source:
+    depth: 1
     uri: (( concat "https://github.com/" metadata.geode-fork "/geode.git" ))
     branch: (( grab metadata.geode-build-branch ))
     ignore_paths:
@@ -49,7 +64,8 @@ resources:
     uri: (( concat "https://github.com/" metadata.geode-fork "/geode.git" ))
     branch: (( grab metadata.geode-build-branch ))
     paths:
-    - ci/*
+    - ci/pipelines/geode-build/*
+    - ci/scripts/*
 - name: geode-ci-windows
   type: git
   source:
@@ -88,6 +104,8 @@ resources:
       password: ((!source-email-password))
     from: ((!source-email-address))
     to: [ ((!notification-email-address)) ]
+- name: concourse-metadata-resource
+  type: concourse-metadata-resource
 
 groups:
 - name: main
@@ -96,7 +114,7 @@ groups:
   - DistributedTest
   - AcceptanceTest
   - IntegrationTest
-  - FlakyTest
+  - UpgradeTest
   - TestExamples
   - UpdatePassingRef
 - name: UITests
@@ -119,11 +137,16 @@ jobs:
     - get: geode-ci
     - get: geode-build-version
       params: {pre: build}
-    - get: docker-geode-build-image
     - task: build
-      image: docker-geode-build-image
       config:
         platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            username: ((!docker-username))
+            password: ((!docker-password))
+            repository: gcr.io/apachegeode-ci/((!docker-image-prefix))((!docker-image-name))
+            tag: latest
         inputs:
         - name: geode
         - name: geode-ci
@@ -156,7 +179,7 @@ jobs:
   public: true
   plan:
     - get: geode
-      passed: [AcceptanceTest, DistributedTest, IntegrationTest]
+      passed: [AcceptanceTest, DistributedTest, IntegrationTest, UpgradeTest]
       trigger: true
     - aggregate:
       - get: geode-ci
@@ -188,7 +211,7 @@ jobs:
   public: true
   plan:
     - get: geode
-      passed: [AcceptanceTest, DistributedTest, IntegrationTest]
+      passed: [AcceptanceTest, DistributedTest, IntegrationTest, UpgradeTest]
       trigger: true
     - get: geode-ci
     - get: docker-geode-build-image

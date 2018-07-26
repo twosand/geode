@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 import org.mockito.stubbing.Answer;
 
@@ -39,9 +38,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class AbortBackupStepTest {
 
   private DistributionManager dm;
@@ -98,9 +95,8 @@ public class AbortBackupStepTest {
 
   @Test
   public void sendReturnsResultsForAllMembers() throws Exception {
-    MemberWithPersistentIds[] ids =
-        new MemberWithPersistentIds[] {new MemberWithPersistentIds(member1, new HashSet<>()),
-            new MemberWithPersistentIds(member2, new HashSet<>())};
+    MemberWithPersistentIds[] ids = new MemberWithPersistentIds[] {
+        createMemberWithPersistentIds(member1), createMemberWithPersistentIds(member2)};
 
     doAnswer(invokeAddToResults(ids)).when(backupReplyProcessor).waitForReplies();
 
@@ -120,7 +116,7 @@ public class AbortBackupStepTest {
 
   @Test
   public void addToResultsShouldShowUpInGetResults() {
-    abortBackupStep.addToResults(member1, new HashSet<>());
+    abortBackupStep.addToResults(member1, createPersistentIds());
     assertThat(abortBackupStep.getResults()).containsOnlyKeys(member1);
   }
 
@@ -169,6 +165,16 @@ public class AbortBackupStepTest {
       }
       return null;
     };
+  }
+
+  private MemberWithPersistentIds createMemberWithPersistentIds(InternalDistributedMember member) {
+    return new MemberWithPersistentIds(member, createPersistentIds());
+  }
+
+  private HashSet<PersistentID> createPersistentIds() {
+    HashSet<PersistentID> persistentIds = new HashSet<>();
+    persistentIds.add(mock(PersistentID.class));
+    return persistentIds;
   }
 
   private static class MemberWithPersistentIds {
