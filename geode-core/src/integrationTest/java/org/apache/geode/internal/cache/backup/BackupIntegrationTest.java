@@ -32,6 +32,7 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -175,6 +176,9 @@ public class BackupIntegrationTest {
     cache.close();
     // destroy the disk directories
     destroyDiskDirs();
+
+    Files.write(Paths.get("c:\\debug.txt"), writer.getBackupDirectory().toString().getBytes());
+    Thread.sleep(60 * 60 * 1000);
 
     // Now the restore script should work
     restoreBackup(backupDir, false);
