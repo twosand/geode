@@ -32,7 +32,6 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -177,8 +176,9 @@ public class BackupIntegrationTest {
     // destroy the disk directories
     destroyDiskDirs();
 
-    Files.write(Paths.get("c:\\debug.txt"), writer.getBackupDirectory().toString().getBytes());
-    Thread.sleep(60 * 60 * 1000);
+    // Files.write(Paths.get("c:\\debug.txt"),
+    // (writer.getBackupDirectory().toString() + "\\restore.bat").getBytes());
+    // Thread.sleep(60 * 60 * 1000);
 
     // Now the restore script should work
     restoreBackup(backupDir, false);
@@ -467,10 +467,16 @@ public class BackupIntegrationTest {
 
     boolean isWindows = script.getName().endsWith("bat");
     if (isWindows) {
-      command.add("cmd.exe");
-      command.add("/c");
-      command.add(String.format("cd /d %s && %s",
-          script.getCanonicalFile().toPath().getParent().toString(), script.getCanonicalPath()));
+      // command.add("cmd.exe");
+      // command.add("/c");
+      // command.add(String.format("cd /d %s && %s",
+      // script.getCanonicalFile().toPath().getParent().toString(), script.getCanonicalPath()));
+
+      command.add("powershell.exe");
+      command.add("-command");
+      command.add(String.format(
+          "$A = Start-Process -FilePath %s -Wait -PassThru -WindowStyle Hidden; $A.ExitCode",
+          script.getCanonicalPath()));
     } else {
       command.add(script.getCanonicalPath());
     }
