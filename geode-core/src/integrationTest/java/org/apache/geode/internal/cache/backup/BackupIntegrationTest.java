@@ -475,7 +475,7 @@ public class BackupIntegrationTest {
       command.add("powershell.exe");
       command.add("-command");
       command.add(String.format(
-          "$A = Start-Process -FilePath %s -Wait -PassThru -WindowStyle Hidden; $A.ExitCode",
+          "$A = Start-Process -FilePath \"%s\" -Wait -PassThru -WindowStyle Hidden; $A.ExitCode",
           script.getCanonicalPath()));
     } else {
       command.add(script.getCanonicalPath());
