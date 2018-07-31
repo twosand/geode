@@ -472,11 +472,13 @@ public class BackupIntegrationTest {
       // command.add(String.format("cd /d %s && %s",
       // script.getCanonicalFile().toPath().getParent().toString(), script.getCanonicalPath()));
 
-      command.add("powershell.exe");
-      command.add("-command");
-      command.add(String.format(
-          "$A = Start-Process -FilePath \"\\\\?\\%s\" -Wait -PassThru -WindowStyle Hidden; $A.ExitCode",
-          script.getCanonicalPath()));
+      // command.add("powershell.exe");
+      // command.add("-command");
+      // command.add(String.format(
+      // "$A = Start-Process -FilePath \"\\\\?\\%s\" -Wait -PassThru -WindowStyle Hidden;
+      // $A.ExitCode",
+      // script.getCanonicalPath()));
+      command.add(script.getCanonicalPath());
     } else {
       command.add(script.getCanonicalPath());
     }
