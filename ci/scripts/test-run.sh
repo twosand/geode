@@ -17,6 +17,7 @@
 # limitations under the License.
 
 set -e
+set -x
 
 export TERM=${TERM:-dumb}
 export BUILDROOT=$(pwd)
@@ -24,7 +25,6 @@ export DEST_DIR=${BUILDROOT}/built-geode
 export GRADLE_TASK=${1}
 export BASE_FILENAME=${2}
 export GRADLE_TEST_CATEGORY=${3}
-export TMPDIR=${DEST_DIR}/tmp
 export GEODE_BUILD=${DEST_DIR}/test
 export GEODE_BUILD_VERSION_NUMBER=$(grep "versionNumber *=" geode/gradle.properties | awk -F "=" '{print $2}' | tr -d ' ')
 
@@ -85,9 +85,7 @@ fi
 printf "\n\n"
 
 directories_file=${DEST_DIR}/artifact_directories
-mkdir -p ${TMPDIR}
 
-echo "TMPDIR = ${TMPDIR}"
 echo "GRADLE_TASK = ${GRADLE_TASK}"
 echo "BASE_FILENAME = ${BASE_FILENAME}"
 
