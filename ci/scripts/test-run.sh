@@ -143,10 +143,6 @@ pushd ${GEODE_BUILD}
   echo "Running tests"
   set -x
 
-  if [ "${GRADLE_TASK}" = "integrationTest" ]; then
-    GRADLE_TASK="geode-core:integrationTest --tests BackupIntegrationTest"
-  fi
-
 #    ./gradlew --no-daemon -x javadoc -x spotlessCheck :geode-assembly:acceptanceTest --tests org.apache.geode.management.internal.cli.commands.PutCommandWithJsonTest
   ./gradlew ${PARALLEL_DUNIT} \
       ${DUNIT_PARALLEL_FORKS} \
