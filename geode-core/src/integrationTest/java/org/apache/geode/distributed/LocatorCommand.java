@@ -14,10 +14,13 @@
  */
 package org.apache.geode.distributed;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.distributed.LocatorLauncher.Command;
+import org.apache.geode.test.process.ProcessWrapper;
 
 public class LocatorCommand {
 
@@ -33,12 +36,16 @@ public class LocatorCommand {
     // do nothing
   }
 
-  public LocatorCommand(final UsesLocatorCommand user) {
+  public LocatorCommand(final UsesLocatorCommand user) throws Exception {
     this.javaPath = user.getJavaPath();
     this.jvmArguments = user.getJvmArguments();
-    this.classPath = user.getClassPath();
     this.name = user.getName();
     this.command = Command.START;
+
+    String classPath = user.getClassPath();
+    List<String> parts = Arrays.asList(classPath.split(File.pathSeparator));
+    this.classPath =
+        ProcessWrapper.createManifestJar(parts, user.getWorkingDirectory().getAbsolutePath());
   }
 
   public LocatorCommand withJavaPath(final String javaPath) {

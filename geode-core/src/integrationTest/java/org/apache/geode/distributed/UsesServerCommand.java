@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed;
 
+import java.io.File;
 import java.util.List;
 
 public interface UsesServerCommand {
@@ -27,4 +28,6 @@ public interface UsesServerCommand {
   String getName();
 
   boolean getDisableDefaultServer();
+
+  File getWorkingDirectory();
 }

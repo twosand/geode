@@ -14,10 +14,13 @@
  */
 package org.apache.geode.distributed;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.distributed.ServerLauncher.Command;
+import org.apache.geode.test.process.ProcessWrapper;
 
 public class ServerCommand {
 
@@ -34,13 +37,17 @@ public class ServerCommand {
     // do nothing
   }
 
-  public ServerCommand(final UsesServerCommand user) {
+  public ServerCommand(final UsesServerCommand user) throws Exception {
     this.javaPath = user.getJavaPath();
     this.jvmArguments = user.getJvmArguments();
-    this.classPath = user.getClassPath();
     this.name = user.getName();
     this.disableDefaultServer = user.getDisableDefaultServer();
     this.command = Command.START;
+
+    String classPath = user.getClassPath();
+    List<String> parts = Arrays.asList(classPath.split(File.pathSeparator));
+    this.classPath =
+        ProcessWrapper.createManifestJar(parts, user.getWorkingDirectory().getAbsolutePath());
   }
 
   public ServerCommand withJavaPath(final String javaPath) {
