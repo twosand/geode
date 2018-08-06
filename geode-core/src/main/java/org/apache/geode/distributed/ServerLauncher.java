@@ -2403,6 +2403,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
                   .toLocalizedString("Server"));
         }
 
+        System.out.println(
+            "@@@@@@@@@ ServerLauncher::validateOnStart - CURRENT_DIRECTORY - " + CURRENT_DIRECTORY);
+        System.out.println("@@@@@@@@@ ServerLauncher::validateOnStart - getWorkingDirectory() - "
+            + getWorkingDirectory());
         if (!CURRENT_DIRECTORY.equals(getWorkingDirectory())) {
           throw new IllegalStateException(
               LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
