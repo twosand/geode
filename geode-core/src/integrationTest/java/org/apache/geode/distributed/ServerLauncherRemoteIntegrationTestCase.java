@@ -55,7 +55,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   private ServerCommand serverCommand;
 
   @Before
-  public void setUpServerLauncherRemoteIntegrationTestCase() {
+  public void setUpServerLauncherRemoteIntegrationTestCase() throws Exception {
     serverCommand = new ServerCommand(this);
   }
 

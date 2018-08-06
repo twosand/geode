@@ -247,7 +247,7 @@ public abstract class LauncherIntegrationTestCase {
     return getProcessType().getStopRequestFileName();
   }
 
-  protected File getWorkingDirectory() {
+  public File getWorkingDirectory() {
     return temporaryFolder.getRoot();
   }
 

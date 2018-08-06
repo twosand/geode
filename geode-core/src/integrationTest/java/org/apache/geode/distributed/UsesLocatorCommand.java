@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed;
 
+import java.io.File;
 import java.util.List;
 
 public interface UsesLocatorCommand {
@@ -25,4 +26,6 @@ public interface UsesLocatorCommand {
   String getClassPath();
 
   String getName();
+
+  File getWorkingDirectory();
 }
