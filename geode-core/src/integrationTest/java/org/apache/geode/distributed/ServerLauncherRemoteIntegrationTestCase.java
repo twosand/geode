@@ -15,6 +15,7 @@
 package org.apache.geode.distributed;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.stream.Collectors.joining;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
@@ -172,6 +173,9 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
 
   private ServerLauncher awaitStart(final File workingDirectory) {
     try {
+      System.out.println(
+          "%%%%%%%% ServerLauncherRemoteIntegrationTestCase::awaitStart workingDirectory - "
+              + workingDirectory.getAbsolutePath());
       launcher = new ServerLauncher.Builder()
           .setWorkingDirectory(workingDirectory.getCanonicalPath()).build();
       awaitStart(launcher);
@@ -206,6 +210,8 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   }
 
   private void executeCommandWithReaders(final List<String> command) throws IOException {
+    System.out
+        .println(">>>>>>>> Command being executed - " + command.stream().collect(joining(",")));
     process = new ProcessBuilder(command).directory(getWorkingDirectory()).start();
     processOutReader = new ProcessStreamReader.Builder(process)
         .inputStream(process.getInputStream()).build().start();
@@ -215,6 +221,8 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
 
   private void executeCommandWithReaders(final List<String> command,
       final InputListener outListener, final InputListener errListener) throws IOException {
+    System.out
+        .println(">>>>>>>> Command being executed - " + command.stream().collect(joining(",")));
     process = new ProcessBuilder(command).directory(getWorkingDirectory()).start();
     processOutReader = new ProcessStreamReader.Builder(process)
         .inputStream(process.getInputStream()).inputListener(outListener).build().start();
