@@ -19,6 +19,8 @@
 set -e
 set -x
 
+env | sort
+
 export TERM=${TERM:-dumb}
 export BUILDROOT=$(pwd)
 export DEST_DIR=${BUILDROOT}/built-geode
