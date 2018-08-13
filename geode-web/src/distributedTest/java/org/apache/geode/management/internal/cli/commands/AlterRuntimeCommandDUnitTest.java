@@ -79,7 +79,7 @@ public class AlterRuntimeCommandDUnitTest {
 
     MemberVM server0 =
         startupRule.startServerVM(0,
-            x -> x.withJMXManager().withHttpService().withProperty(LOG_LEVEL, "info"));
+            x -> x.withJMXManager().withHttpService().withProperty(LOG_LEVEL, "debug"));
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);
@@ -130,7 +130,7 @@ public class AlterRuntimeCommandDUnitTest {
       throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -167,7 +167,7 @@ public class AlterRuntimeCommandDUnitTest {
       throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -216,7 +216,7 @@ public class AlterRuntimeCommandDUnitTest {
   public void alterLogDiskSpaceLimitOnMember_OK(final boolean connectOverHttp) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withProperties(props).withHttpService());
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -259,7 +259,7 @@ public class AlterRuntimeCommandDUnitTest {
   public void alterLogDiskSpaceLimitOnGroup_OK(final boolean connectOverHttp) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -311,7 +311,7 @@ public class AlterRuntimeCommandDUnitTest {
       throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -350,7 +350,7 @@ public class AlterRuntimeCommandDUnitTest {
         "java.lang.IllegalArgumentException: Could not set \"log-file-size-limit\"");
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -380,7 +380,7 @@ public class AlterRuntimeCommandDUnitTest {
         "java.lang.IllegalArgumentException: Could not set \"log-file-size-limit\"");
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -423,7 +423,7 @@ public class AlterRuntimeCommandDUnitTest {
       throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -461,7 +461,7 @@ public class AlterRuntimeCommandDUnitTest {
       final boolean connectOverHttp) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -506,7 +506,7 @@ public class AlterRuntimeCommandDUnitTest {
       final boolean connectOverHttp) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -552,7 +552,7 @@ public class AlterRuntimeCommandDUnitTest {
       throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -589,7 +589,7 @@ public class AlterRuntimeCommandDUnitTest {
       final boolean connectOverHttp) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -635,7 +635,7 @@ public class AlterRuntimeCommandDUnitTest {
       final boolean connectOverHttp) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -684,7 +684,7 @@ public class AlterRuntimeCommandDUnitTest {
         "java.lang.IllegalArgumentException: Could not set \"statistic-sample-rate");
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -720,7 +720,7 @@ public class AlterRuntimeCommandDUnitTest {
       throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -760,7 +760,7 @@ public class AlterRuntimeCommandDUnitTest {
       final boolean connectOverHttp) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -807,7 +807,7 @@ public class AlterRuntimeCommandDUnitTest {
       final boolean connectOverHttp) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -857,7 +857,7 @@ public class AlterRuntimeCommandDUnitTest {
         "java.lang.IllegalArgumentException: Could not set \"archive-disk-space-limit");
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -906,7 +906,7 @@ public class AlterRuntimeCommandDUnitTest {
       throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -946,7 +946,7 @@ public class AlterRuntimeCommandDUnitTest {
       final boolean connectOverHttp) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -993,7 +993,7 @@ public class AlterRuntimeCommandDUnitTest {
       final boolean connectOverHttp) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -1043,7 +1043,7 @@ public class AlterRuntimeCommandDUnitTest {
         "java.lang.IllegalArgumentException: Could not set \"archive-file-size-limit");
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -1079,7 +1079,7 @@ public class AlterRuntimeCommandDUnitTest {
   public void alterDisableStatisticSampling(final boolean connectOverHttp) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -1115,12 +1115,12 @@ public class AlterRuntimeCommandDUnitTest {
    * configuration
    */
   @Test
-  @Parameters({"true", "false"})
+  @Parameters({"true"})
   public void alterGroupWithoutOptions_needsRelevantParameter(final boolean connectOverHttp)
       throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -1164,12 +1164,12 @@ public class AlterRuntimeCommandDUnitTest {
    * configuration
    */
   @Test
-  @Parameters({"true", "false"})
+  @Parameters({"true"})
   public void alterMemberWithoutOptions_needsRelevantParameter(final boolean connectOverHttp)
       throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     MemberVM locator =
         startupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
@@ -1201,7 +1201,7 @@ public class AlterRuntimeCommandDUnitTest {
   }
 
   @Test
-  @Parameters({"true", "false"})
+  @Parameters({"true"})
   public void testAlterUpdatesSharedConfig(final boolean connectOverHttp) throws Exception {
     MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
 
@@ -1213,7 +1213,7 @@ public class AlterRuntimeCommandDUnitTest {
 
     Properties props = new Properties();
     props.setProperty(GROUPS, "Group1");
-    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(LOG_LEVEL, "debug");
     startupRule.startServerVM(1, props, locator.getPort());
 
     String command = "alter runtime --group=Group1 --log-level=fine";
