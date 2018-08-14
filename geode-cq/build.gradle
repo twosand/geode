@@ -24,4 +24,6 @@ dependencies {
   integrationTestCompile project(":geode-dunit")
 
   upgradeTestCompile project(":geode-dunit")
+
+  distributedTestRuntimeOnly project(':geode-core')
 }

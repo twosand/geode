@@ -18,16 +18,14 @@
 dependencies {
   compileOnly project(':geode-core')
 
-
   testCompile project(':geode-core')
   testCompile project(':geode-junit')
 
-
   integrationTestCompile project(":geode-junit")
-
 
   distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
 
+  distributedTestRuntimeOnly project(':geode-core')
 
   upgradeTestCompile project(":geode-dunit")
 }
