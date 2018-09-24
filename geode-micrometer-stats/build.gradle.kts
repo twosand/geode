@@ -23,7 +23,7 @@ version = "1.8.0-SNAPSHOT"
 
 repositories {
     maven { setUrl("http://dl.bintray.com/kotlin/kotlin-eap") }
-    maven { setUrl("file:///home/ukohlmeyer/.m2/repository") }
+    maven { setUrl("file:///Users/ukohlmeyer/.m2/repository") }
     mavenCentral()
     mavenLocal()
 }

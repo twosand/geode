@@ -485,12 +485,12 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     try {
       for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 5000;) {
         Thread.sleep(10);
-        Statistics si =
-            HeapMemoryMonitor.getTenuredPoolStatistics((StatisticsManager) this.system);
-        if (si != null) {
-          statSampler.addLocalStatListener(listener, si, "currentUsedMemory");
-          done = true;
-        }
+        // Statistics si =
+        // HeapMemoryMonitor.getTenuredPoolStatistics((StatisticsManager) this.system);
+        // if (si != null) {
+        // statSampler.addLocalStatListener(listener, si, "currentUsedMemory");
+        done = true;
+        // }
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();

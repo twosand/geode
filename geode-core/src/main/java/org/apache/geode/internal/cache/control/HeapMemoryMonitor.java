@@ -36,7 +36,6 @@ import javax.management.NotificationListener;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
@@ -54,8 +53,9 @@ import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.LocalStatListener;
-import org.apache.geode.internal.statistics.StatisticsImpl;
+import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.stats.common.internal.cache.control.ResourceManagerStats;
+import org.apache.geode.stats.common.statistics.Statistics;
 
 /**
  * Allows for the setting of eviction and critical thresholds. These thresholds are compared against
@@ -326,15 +326,15 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
 
     try {
       sampler.waitForInitialization();
-      Statistics si = getTenuredPoolStatistics(this.cache.getInternalDistributedSystem());
-      if (si != null) {
-        sampler.addLocalStatListener(this.statListener, si, "currentUsedMemory");
-        if (logger.isDebugEnabled()) {
-          logger.debug("Registered stat listener for " + si.getTextId());
-        }
-
-        return true;
-      }
+      // Statistics si = getTenuredPoolStatistics(this.cache.getInternalDistributedSystem());
+      // if (si != null) {
+      // sampler.addLocalStatListener(this.statListener, si, "currentUsedMemory");
+      // if (logger.isDebugEnabled()) {
+      // logger.debug("Registered stat listener for " + si.getTextId());
+      // }
+      //
+      return true;
+      // }
     } catch (InterruptedException iex) {
       Thread.currentThread().interrupt();
       this.cache.getCancelCriterion().checkCancelInProgress(iex);

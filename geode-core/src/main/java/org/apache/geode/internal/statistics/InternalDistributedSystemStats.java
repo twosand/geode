@@ -83,7 +83,7 @@ public class InternalDistributedSystemStats {
     FunctionStats stats = functionExecutionStatsMap.get(textId);
     if (stats == null) {
       stats = StatsFactory.createStatsImpl(FunctionStats.class, textId);
-      System.out.println("stats = " + stats+ " textId = "+textId);
+      System.out.println("stats = " + stats + " textId = " + textId);
       FunctionStats oldStats = functionExecutionStatsMap.putIfAbsent(textId, stats);
       if (oldStats != null) {
         stats.close();

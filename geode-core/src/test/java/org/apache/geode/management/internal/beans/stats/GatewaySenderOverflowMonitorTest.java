@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import org.apache.geode.Statistics;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.statistics.SampleCollector;
@@ -38,6 +37,7 @@ import org.apache.geode.internal.statistics.StatisticsSampler;
 import org.apache.geode.internal.statistics.TestStatisticsManager;
 import org.apache.geode.internal.statistics.TestStatisticsSampler;
 import org.apache.geode.internal.statistics.ValueMonitor;
+import org.apache.geode.stats.common.statistics.Statistics;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
 @Category(StatisticsTest.class)

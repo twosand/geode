@@ -43,7 +43,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.DataSerializable;
-import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
@@ -1757,12 +1756,12 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     // fix: found race condition here...
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
-        Statistics si = HeapMemoryMonitor.getTenuredPoolStatistics(internalSystem);
-        if (si != null) {
-          sampler.addLocalStatListener(l, si, "currentUsedMemory");
-          return true;
-        }
-        return false;
+        // Statistics si = HeapMemoryMonitor.getTenuredPoolStatistics(internalSystem);
+        // if (si != null) {
+        // sampler.addLocalStatListener(l, si, "currentUsedMemory");
+        return true;
+        // }
+        // return false;
       }
 
       public String description() {
