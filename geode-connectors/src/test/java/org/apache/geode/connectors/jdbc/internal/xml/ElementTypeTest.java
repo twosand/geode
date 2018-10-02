@@ -42,25 +42,27 @@ import org.xml.sax.Attributes;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
+import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 
 public class ElementTypeTest {
 
   private Attributes attributes;
-  private CacheCreation cacheCreation;
-  private ExtensionPoint<Cache> extensionPoint;
+  private RegionCreation regionCreation;
+  private ExtensionPoint<Region<?, ?>> extensionPoint;
   private Stack<Object> stack;
 
   @Before
   public void setup() {
     attributes = mock(Attributes.class);
-    cacheCreation = mock(CacheCreation.class);
+    regionCreation = mock(RegionCreation.class);
     extensionPoint = mock(ExtensionPoint.class);
 
-    when(cacheCreation.getExtensionPoint()).thenReturn(extensionPoint);
+    when(regionCreation.getExtensionPoint()).thenReturn(extensionPoint);
 
     stack = new Stack<>();
   }
@@ -90,7 +92,7 @@ public class ElementTypeTest {
 
   @Test
   public void startElementConnectionService() {
-    stack.push(cacheCreation);
+    stack.push(regionCreation);
 
     CONNECTION_SERVICE.startElement(stack, attributes);
 

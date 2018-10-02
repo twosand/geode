@@ -19,20 +19,22 @@ import java.util.Stack;
 import org.xml.sax.Attributes;
 
 import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
+import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 
 public enum ElementType {
   CONNECTION_SERVICE("connector-service") {
     @Override
     void startElement(Stack<Object> stack, Attributes attributes) {
-      if (!(stack.peek() instanceof CacheCreation)) {
+      if (!(stack.peek() instanceof RegionCreation)) {
         throw new CacheXmlException(
-            "jdbc <connector-service> elements must occur within <cache> elements");
+            "<jdbc:connector-service> elements must occur within <region> elements");
       }
-      CacheCreation cacheCreation = (CacheCreation) stack.peek();
+      RegionCreation regionCreation = (RegionCreation) stack.peek();
       JdbcServiceConfiguration serviceConfig = new JdbcServiceConfiguration();
-      cacheCreation.getExtensionPoint().addExtension(serviceConfig);
+      regionCreation.getExtensionPoint().addExtension(serviceConfig);
       stack.push(serviceConfig);
     }
 
@@ -46,7 +48,7 @@ public enum ElementType {
     void startElement(Stack<Object> stack, Attributes attributes) {
       if (!(stack.peek() instanceof JdbcServiceConfiguration)) {
         throw new CacheXmlException(
-            "jdbc <connection> elements must occur within <connector-service> elements");
+            "<jdbc:connection> elements must occur within <jdbc:connector-service> elements");
       }
       ConnectorService.Connection connection = new ConnectorService.Connection();
       connection.setName(attributes.getValue(JdbcConnectorServiceXmlParser.NAME));
@@ -78,7 +80,7 @@ public enum ElementType {
     void startElement(Stack<Object> stack, Attributes attributes) {
       if (!(stack.peek() instanceof JdbcServiceConfiguration)) {
         throw new CacheXmlException(
-            "jdbc <region-mapping> elements must occur within <connector-service> elements");
+            "<jdbc:region-mapping> elements must occur within <jdbc:connector-service> elements");
       }
       ConnectorService.RegionMapping mapping = new ConnectorService.RegionMapping();
       mapping.setRegionName(attributes.getValue(JdbcConnectorServiceXmlParser.REGION));
@@ -103,7 +105,7 @@ public enum ElementType {
     void startElement(Stack<Object> stack, Attributes attributes) {
       if (!(stack.peek() instanceof ConnectorService.RegionMapping)) {
         throw new CacheXmlException(
-            "jdbc <field-mapping> elements must occur within <region-mapping> elements");
+            "<jdbc:field-mapping> elements must occur within <jdbc:region-mapping> elements");
       }
       ConnectorService.RegionMapping mapping = (ConnectorService.RegionMapping) stack.peek();
       mapping.getFieldMapping()

@@ -477,6 +477,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createRegionUsingGfsh(true, false, true);
     createJdbcConnection();
     createMapping(REGION_NAME, CONNECTION_NAME, Employee.class.getName(), false);
+    exportClusterConfig();
     server.invoke(() -> {
       String key = "id1";
       Employee value = new Employee("Emp1", 55);
@@ -650,6 +651,11 @@ public abstract class JdbcDistributedTest implements Serializable {
     final String commandStr = "create jdbc-mapping --region=" + regionName + " --connection="
         + connectionName + (valueContainsPrimaryKey ? " --value-contains-primary-key" : "")
         + (pdxClassName != null ? " --pdx-class-name=" + pdxClassName : "");
+    gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
+  }
+
+  private void exportClusterConfig() {
+    final String commandStr = "export cluster-configuration --zip-file-name=./cluster.zip";
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 

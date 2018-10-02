@@ -56,4 +56,5 @@ public class JdbcConnectorServiceXmlParser extends AbstractXmlParser {
     }
     ElementType.getTypeFromName(localName).endElement(stack);
   }
+
 }
