@@ -562,7 +562,7 @@ public class StartServerCommand extends InternalGfshCommand {
     }
   }
 
-  private void addJvmOptionsForOutOfMemoryErrors(final List<String> commandLine) {
+  static void addJvmOptionsForOutOfMemoryErrors(final List<String> commandLine) {
     if (SystemUtils.isHotSpotVM()) {
       if (SystemUtils.isWindows()) {
         // ProcessBuilder "on Windows" needs every word (space separated) to be
