@@ -24,9 +24,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import java.io.File;
-import java.io.IOException;
-
-import javax.management.MalformedObjectNameException;
 
 import org.junit.Before;
 import org.junit.Test;

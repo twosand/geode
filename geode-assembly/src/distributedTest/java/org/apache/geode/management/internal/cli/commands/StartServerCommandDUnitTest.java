@@ -41,7 +41,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Paths;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -67,6 +66,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
 public class StartServerCommandDUnitTest {
 
@@ -76,6 +76,9 @@ public class StartServerCommandDUnitTest {
   private File workingDir;
   private String memberName;
   private int serverPort;
+
+  @ClassRule
+  public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
@@ -237,33 +240,6 @@ public class StartServerCommandDUnitTest {
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     assertThat(result.getMessageFromContent()).contains(expectedMessage).contains(expectedMessage2);
-  }
-
-  @Test
-  public void testWithMissingStartDirectoryThatCanBeCreated() {
-    // path to a missing dir that can be created
-    String readWritePathname = "readWriteDir";
-    File readWriteDir = new File(readWritePathname);
-    String missingDirPath =
-        Paths.get(readWritePathname, "missing", "dir", "to", "start", "in").toString();
-
-    String expectedMessage = "Server in .*" + missingDirPath.replace("\\", "\\\\");
-
-    String command = new CommandStringBuilder(START_SERVER)
-        .addOption(START_SERVER__NAME, memberName)
-        .addOption(START_SERVER__LOCATORS, locatorConnectionString)
-        .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
-        .addOption(START_SERVER__DIR, missingDirPath)
-        .getCommandString();
-
-    try {
-      CommandResult result = gfsh.executeCommand(command);
-
-      assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-      assertThat(result.getMessageFromContent()).containsPattern(expectedMessage);
-    } finally {
-      FileUtils.deleteQuietly(readWriteDir);
-    }
   }
 
   @Test
