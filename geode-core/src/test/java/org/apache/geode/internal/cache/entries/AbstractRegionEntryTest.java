@@ -29,12 +29,15 @@ import java.io.IOException;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
+import org.apache.geode.cache.util.GatewayConflictResolver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -57,6 +60,9 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 public class AbstractRegionEntryTest {
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void whenMakeTombstoneHasSetValueThatThrowsExceptionDoesNotChangeValueToTombstone()
@@ -118,7 +124,7 @@ public class AbstractRegionEntryTest {
     }
   }
 
-  @Test(expected = ConcurrentCacheModificationException.class)
+  @Test
   public void gatewayEventsFromSameDSShouldThrowCMEIfMisordered() {
     // create 2 gateway events with the same dsid, but different timestamp
     // apply them in misorder, it should throw CME
@@ -131,25 +137,30 @@ public class AbstractRegionEntryTest {
     EntryEventImpl entryEvent1 = new EntryEventImpl();
     entryEvent1.setRegion(lr);
     when(lr.getCache()).thenReturn(cache);
-    when(cache.getGatewayConflictResolver()).thenReturn(null);
+    GatewayConflictResolver resolver = mock(GatewayConflictResolver.class);
+    when(cache.getGatewayConflictResolver()).thenReturn(resolver);
 
     VersionTag tag1 = VersionTag.create(member1);
     tag1.setVersionTimeStamp(1);
-    tag1.setDistributedSystemId(2);
+    tag1.setDistributedSystemId(3);
     tag1.setIsGatewayTag(true);
 
     VersionTag tag2 = VersionTag.create(member1);
     tag2.setVersionTimeStamp(2);
-    tag2.setDistributedSystemId(2);
+    tag2.setDistributedSystemId(3);
     tag2.setIsGatewayTag(true);
 
     ((TestableRegionEntry) re).setVersions(tag2);
     assertEquals(tag2.getVersionTimeStamp(),
         re.getVersionStamp().asVersionTag().getVersionTimeStamp());
+    assertEquals(3, ((TestableRegionEntry) re).getDistributedSystemId());
 
     // apply tag1 with smaller timestamp should throw CME
     entryEvent1.setVersionTag(tag1);
+    expectedException.expect(ConcurrentCacheModificationException.class);
+    expectedException.expectMessage("conflicting WAN event detected");
     re.processVersionTag(entryEvent1);
+    verify(resolver, never()).onEvent(any(), any());
   }
 
   @Test
@@ -169,7 +180,40 @@ public class AbstractRegionEntryTest {
 
     VersionTag tag1 = VersionTag.create(member1);
     tag1.setVersionTimeStamp(1);
-    tag1.setDistributedSystemId(2);
+    tag1.setDistributedSystemId(3);
+    tag1.setIsGatewayTag(true);
+
+    VersionTag tag2 = VersionTag.create(member1);
+    tag2.setVersionTimeStamp(2);
+    tag2.setDistributedSystemId(3);
+    tag2.setIsGatewayTag(true);
+
+    ((TestableRegionEntry) re).setVersions(tag1);
+    assertEquals(tag1.getVersionTimeStamp(),
+        re.getVersionStamp().asVersionTag().getVersionTimeStamp());
+    assertEquals(3, ((TestableRegionEntry) re).getDistributedSystemId());
+
+    // apply tag2 should be accepted
+    entryEvent1.setVersionTag(tag2);
+    re.processVersionTag(entryEvent1);
+  }
+
+  @Test
+  public void stampWithoutDSIDShouldAcceptAnyTag() {
+    GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
+    LocalRegion lr = mock(LocalRegion.class);
+    String value = "value";
+    AbstractRegionEntry re = new TestableRegionEntry(lr, value);
+    InternalDistributedMember member1 = mock(InternalDistributedMember.class);
+
+    EntryEventImpl entryEvent1 = new EntryEventImpl();
+    entryEvent1.setRegion(lr);
+    when(lr.getCache()).thenReturn(cache);
+    when(cache.getGatewayConflictResolver()).thenReturn(null);
+
+    VersionTag tag1 = VersionTag.create(member1);
+    tag1.setVersionTimeStamp(1);
+    tag1.setDistributedSystemId(-1);
     tag1.setIsGatewayTag(true);
 
     VersionTag tag2 = VersionTag.create(member1);
@@ -180,6 +224,7 @@ public class AbstractRegionEntryTest {
     ((TestableRegionEntry) re).setVersions(tag1);
     assertEquals(tag1.getVersionTimeStamp(),
         re.getVersionStamp().asVersionTag().getVersionTimeStamp());
+    assertEquals(-1, ((TestableRegionEntry) re).getDistributedSystemId());
 
     // apply tag2 should be accepted
     entryEvent1.setVersionTag(tag2);
@@ -192,6 +237,7 @@ public class AbstractRegionEntryTest {
     private Object value;
     private VersionTag tag;
     private long timeStamp = 0;
+    private int dsId;
 
     protected TestableRegionEntry(RegionEntryContext context, Object value) {
       super(context, value);
@@ -206,6 +252,7 @@ public class AbstractRegionEntryTest {
     public void setVersions(VersionTag tag) {
       this.tag = tag;
       this.timeStamp = tag.getVersionTimeStamp();
+      this.dsId = tag.getDistributedSystemId();
     }
 
     @Override
@@ -317,7 +364,7 @@ public class AbstractRegionEntryTest {
 
     @Override
     public int getDistributedSystemId() {
-      return 2;
+      return this.dsId;
     }
 
     @Override
