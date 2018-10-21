@@ -14,10 +14,13 @@
  */
 package org.apache.geode.internal.cache.entries;
 
+import static org.apache.geode.internal.Assert.assertTrue;
+import static org.apache.geode.internal.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -36,6 +39,7 @@ import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -43,6 +47,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -186,32 +191,89 @@ public class AbstractRegionEntryTest {
     re.processVersionTag(entryEvent1);
   }
 
+  @Test
+  public void shouldCompareDiskStoreIdInCorrectOrder() {
+    // create 2 tag with save version, differen DiskStoreID,
+    // apply one tag to stamp
+    // then compare stamp's DiskStoreID with another tag's
+    LocalRegion lr = mock(LocalRegion.class);
+    String value = "value";
+    AbstractRegionEntry re = new TestableRegionEntry(lr, value);
+    InternalDistributedMember member1 = mock(InternalDistributedMember.class);
+
+    // note: diskStoreID_1 > diskStoreID_2 if considered mostSig
+    // Note: the current code will treat diskStoreID_1 == diskStoreID_3
+    DiskStoreID diskStoreID_1 = new DiskStoreID(0xa870e3a0126e4b0dL, 0x87559e428bd3ad67L);
+    DiskStoreID diskStoreID_2 = new DiskStoreID(0x5a42b9ec2e6e45dbL, 0x9a3c0f29623d925cL);
+    DiskStoreID diskStoreID_3 = new DiskStoreID(0x5a42b9ec2e6e45dbL, 0x87559e428bd3ad67L);
+    assertTrue(diskStoreID_1.compareTo(diskStoreID_2) > 0);
+    assertTrue(diskStoreID_1.compareTo(diskStoreID_3) > 0);
+
+    RegionVersionVector rvv = mock(RegionVersionVector.class);
+    CachePerfStats stats = mock(CachePerfStats.class);
+    when(lr.getVersionVector()).thenReturn(rvv);
+    when(rvv.getCanonicalId(any())).thenReturn(diskStoreID_2);
+    when(lr.getCachePerfStats()).thenReturn(stats);
+    doNothing().when(stats).incConflatedEventsCount();
+
+    // create tag1, tag2, tag3 with different diskstoreId
+    VersionTag tag1 = VersionTag.create(diskStoreID_1);
+    tag1.setEntryVersion(5); // set the same entry version to force it compare DiskStoreID
+    tag1.setVersionTimeStamp(2);
+    tag1.setDistributedSystemId(2);
+    tag1.setIsGatewayTag(false);
+    tag1.setPosDup(true);
+
+    VersionTag tag2 = VersionTag.create(diskStoreID_2);
+    tag2.setEntryVersion(5); // set the same entry version to force it compare DiskStoreID
+    tag2.setVersionTimeStamp(2);
+    tag2.setDistributedSystemId(2);
+    tag2.setIsGatewayTag(false);
+
+    VersionTag tag3 = VersionTag.create(diskStoreID_3);
+    tag3.setEntryVersion(5); // set the same entry version to force it compare DiskStoreID
+    tag3.setVersionTimeStamp(2);
+    tag3.setDistributedSystemId(2);
+    tag3.setIsGatewayTag(false);
+
+    // assign tag1 into stamp
+    ((TestableRegionEntry) re).setVersions(tag1);
+
+    try {
+      re.basicProcessVersionTag(lr, tag2, false, false, diskStoreID_2,
+          member1, true);
+      fail("expect CME here");
+    } catch (ConcurrentCacheModificationException cme) {
+      assertEquals(null, cme.getMessage());
+    }
+
+    // tag3 in stamp should accept tag1's apply, because tag1 is actually bigger
+    // but since leastsig is the same, tag1 and tag3 was treated as equal
+    ((TestableRegionEntry) re).setVersions(tag3);
+    re.basicProcessVersionTag(lr, tag1, false, false, diskStoreID_1,
+        member1, true);
+  }
+
   public static class TestableRegionEntry extends AbstractRegionEntry
       implements OffHeapRegionEntry, VersionStamp {
 
     private Object value;
     private VersionTag tag;
-    private long timeStamp = 0;
 
     protected TestableRegionEntry(RegionEntryContext context, Object value) {
       super(context, value);
     }
 
     @Override
-    public void setVersionTimeStamp(long timeStamp) {
-      this.timeStamp = timeStamp;
-    }
+    public void setVersionTimeStamp(long timeStamp) {}
 
     @Override
     public void setVersions(VersionTag tag) {
       this.tag = tag;
-      this.timeStamp = tag.getVersionTimeStamp();
     }
 
     @Override
-    public void setMemberID(VersionSource memberID) {
-
-    }
+    public void setMemberID(VersionSource memberID) {}
 
     @Override
     public VersionTag asVersionTag() {
@@ -297,22 +359,22 @@ public class AbstractRegionEntryTest {
 
     @Override
     public int getEntryVersion() {
-      return 0;
+      return this.tag.getEntryVersion();
     }
 
     @Override
     public long getRegionVersion() {
-      return 0;
+      return this.tag.getRegionVersion();
     }
 
     @Override
     public long getVersionTimeStamp() {
-      return this.timeStamp;
+      return this.tag.getVersionTimeStamp();
     }
 
     @Override
     public VersionSource getMemberID() {
-      return null;
+      return this.tag.getMemberID();
     }
 
     @Override
