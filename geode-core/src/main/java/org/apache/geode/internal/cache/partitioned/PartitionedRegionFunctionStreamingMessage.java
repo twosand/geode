@@ -94,9 +94,20 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
     if (ds != null) {
       // check if the routingKeyorKeys is null
       // if null call executeOnDataStore otherwise execute on LocalBuckets
-      ds.executeOnDataStore(context.getFilter(), context.getFunction(), context.getArgs(),
-          getProcessorId(), context.getBucketSet(), context.isReExecute(), this, startTime, null,
-          0);
+      // added by DYang 23/10/2018
+      // record the processorId that indicate remote node ServerToClient stream
+      // abort message with the processorId will tell current node remote node already dropped the processor
+      try{
+        PartitionedRegionFunctionStreamingContext.addProcessorId(getProcessorId());
+        ds.executeOnDataStore(context.getFilter(), context.getFunction(), context.getArgs(),
+                getProcessorId(), context.getBucketSet(), context.isReExecute(), this, startTime, null,
+                0);
+
+      }finally {
+        PartitionedRegionFunctionStreamingContext.removeProcessorId(getProcessorId());
+      }
+
+
 
       if (!this.replyLastMsg && context.getFunction().hasResult()) {
         sendReply(getSender(), getProcessorId(), dm,

@@ -19,6 +19,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.NotSerializableException;
 
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingAbortMessage;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -137,5 +139,24 @@ public class FunctionStreamingReplyMessage extends ReplyMessage {
     buff.append(this.lastMsg);
     buff.append(")");
     return buff.toString();
+  }
+
+  /***
+   * This message is sent back from remote node, there should have a processor exist.
+   * When processor already dropped and this message shown, it means something wrong already happened and we should
+   * notify remote node to stop all related actions.
+   * @param dm
+   */
+  @Override
+  public void dmProcess(DistributionManager dm) {
+    ReplyProcessor21 processor = ReplyProcessor21.getProcessor(processorId);
+    if(processor==null)
+    {
+      PartitionedRegionFunctionStreamingAbortMessage msg=new PartitionedRegionFunctionStreamingAbortMessage(processorId);
+      InternalDistributedMember member=getSender();
+      msg.setRecipient(member);
+      dm.putOutgoing(msg);
+    }
+    super.dmProcess(dm);
   }
 }

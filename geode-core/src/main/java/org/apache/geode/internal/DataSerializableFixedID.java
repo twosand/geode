@@ -706,7 +706,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   short FUNCTION_STREAMING_REPLY_MESSAGE = 1204;
   short FUNCTION_STREAMING_ORDERED_REPLY_MESSAGE = 1205;
   short REQUEST_SYNC_MESSAGE = 1206;
-
+  short PR_FUNCTION_STREAMING_ABORT_MESSAGE = 1207;
   // 1,209..1,999 unused
 
   short HIGH_PRIORITY_ACKED_MESSAGE = 2000;

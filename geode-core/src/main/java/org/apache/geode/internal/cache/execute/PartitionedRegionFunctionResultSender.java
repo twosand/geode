@@ -17,6 +17,8 @@ package org.apache.geode.internal.cache.execute;
 
 import java.util.Set;
 
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingAbortMessage;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingContext;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.Function;
@@ -340,6 +342,11 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
     } else { // P2P
       if (this.msg != null) {
         try {
+          // Server to client already closed, we should end the p2p stream
+          if(PartitionedRegionFunctionStreamingContext.processorClosed(msg.getProcessorId())){
+            throw new FunctionException("PartitionedRegionFunctionResultSender sending result but the processor:"
+                    +msg.getProcessorId()+" already closed on original node.");
+          }
           logger.debug("PartitionedRegionFunctionResultSender sending result from remote node {}",
               oneResult);
           this.msg.sendReplyForOneResult(dm, pr, time, oneResult, false,
