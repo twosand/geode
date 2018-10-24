@@ -15,12 +15,6 @@
 
 package org.apache.geode.internal.cache.execute;
 
-import java.util.Set;
-
-import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingAbortMessage;
-import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingContext;
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -29,8 +23,12 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingContext;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingMessage;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Set;
 
 /**
  * ResultSender needs ResultCollector in which to add results one by one. In case of localExecution
@@ -343,9 +341,11 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
       if (this.msg != null) {
         try {
           // Server to client already closed, we should end the p2p stream
-          if(PartitionedRegionFunctionStreamingContext.processorClosed(msg.getProcessorId())){
-            throw new FunctionException("PartitionedRegionFunctionResultSender sending result but the processor:"
-                    +msg.getProcessorId()+" already closed on original node.");
+          if (PartitionedRegionFunctionStreamingContext.processorClosed(msg.getSender(),
+              msg.getProcessorId())) {
+            throw new FunctionException(
+                "PartitionedRegionFunctionResultSender sending result but the processor:"
+                    + msg.getProcessorId() + " already closed on original node.");
           }
           logger.debug("PartitionedRegionFunctionResultSender sending result from remote node {}",
               oneResult);

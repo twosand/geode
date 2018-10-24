@@ -15,12 +15,6 @@
 
 package org.apache.geode.internal.cache.partitioned;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.execute.FunctionException;
@@ -37,6 +31,11 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.execute.FunctionRemoteContext;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
@@ -96,15 +95,17 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
       // if null call executeOnDataStore otherwise execute on LocalBuckets
       // added by DYang 23/10/2018
       // record the processorId that indicate remote node ServerToClient stream
-      // abort message with the processorId will tell current node remote node already dropped the processor
-      try{
-        PartitionedRegionFunctionStreamingContext.addProcessorId(getProcessorId());
-        ds.executeOnDataStore(context.getFilter(), context.getFunction(), context.getArgs(),
-                getProcessorId(), context.getBucketSet(), context.isReExecute(), this, startTime, null,
-                0);
+      // abort message with the processorId will tell current node remote node already dropped the
+      // processor
+      try {
+        PartitionedRegionFunctionStreamingContext.addProcessorId(getSender(), getProcessorId());
 
-      }finally {
-        PartitionedRegionFunctionStreamingContext.removeProcessorId(getProcessorId());
+        ds.executeOnDataStore(context.getFilter(), context.getFunction(), context.getArgs(),
+            getProcessorId(), context.getBucketSet(), context.isReExecute(), this, startTime, null,
+            0);
+
+      } finally {
+        PartitionedRegionFunctionStreamingContext.removeProcessorId(getSender(), getProcessorId());
       }
 
 

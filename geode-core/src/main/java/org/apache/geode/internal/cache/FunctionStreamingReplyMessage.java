@@ -19,8 +19,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.NotSerializableException;
 
-import org.apache.geode.distributed.internal.ReplyProcessor21;
-import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingAbortMessage;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -29,7 +27,9 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingAbortMessage;
 import org.apache.geode.internal.logging.LogService;
 
 public class FunctionStreamingReplyMessage extends ReplyMessage {
@@ -143,17 +143,17 @@ public class FunctionStreamingReplyMessage extends ReplyMessage {
 
   /***
    * This message is sent back from remote node, there should have a processor exist.
-   * When processor already dropped and this message shown, it means something wrong already happened and we should
+   * When processor already dropped and this message shown, it means something wrong already
+   * happened and we should
    * notify remote node to stop all related actions.
-   * @param dm
    */
   @Override
   public void dmProcess(DistributionManager dm) {
     ReplyProcessor21 processor = ReplyProcessor21.getProcessor(processorId);
-    if(processor==null)
-    {
-      PartitionedRegionFunctionStreamingAbortMessage msg=new PartitionedRegionFunctionStreamingAbortMessage(processorId);
-      InternalDistributedMember member=getSender();
+    if (processor == null) {
+      PartitionedRegionFunctionStreamingAbortMessage msg =
+          new PartitionedRegionFunctionStreamingAbortMessage(processorId);
+      InternalDistributedMember member = getSender();
       msg.setRecipient(member);
       dm.putOutgoing(msg);
     }
